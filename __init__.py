@@ -87,3 +87,5 @@ async def async_setup_entry(
     )
 
     _LOGGER.info("Wger integration loaded successfully")
+
+    return True
