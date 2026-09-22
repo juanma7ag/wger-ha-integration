@@ -1,1 +1,21 @@
-{"config":{"step":{"user":{"title":"Wger"}}}}
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conectar con Wger",
+        "description": "Introduce la URL de tu servidor Wger y el token API.",
+        "data": {
+          "url": "URL del servidor",
+          "token": "Token API"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "No se puede conectar con Wger",
+      "unknown": "Error desconocido"
+    },
+    "abort": {
+      "already_configured": "Este servidor Wger ya está configurado"
+    }
+  }
+}
