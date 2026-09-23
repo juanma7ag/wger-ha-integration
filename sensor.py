@@ -75,6 +75,12 @@ SENSORS: tuple[
         native_unit_of_measurement="%",
         icon="mdi:chart-line",
     ),
+    WgerSensorEntityDescription(
+        key="weekly_repetitions",
+        name="Weekly Repetitions",
+        native_unit_of_measurement="reps",
+        icon="mdi:repeat",
+    ),
 )
 
 
@@ -172,6 +178,11 @@ class WgerSensor(
             return round(
                 float(intensity) * 100,
                 1,
+            )
+
+        if key == "weekly_repetitions":
+            return (
+                self.coordinator.weekly_repetitions
             )
 
         return None

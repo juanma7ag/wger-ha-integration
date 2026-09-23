@@ -91,23 +91,22 @@ class WgerDataUpdateCoordinator(
 
         # Get statistics for the active routine.
         routine_stats = None
+        weekly_repetitions = None
 
         if active_routine:
+            routine_id = active_routine["id"]
+
             routine_stats = (
                 await self.api.routines.get_current_week_stats(
-                    active_routine["id"]
+                    routine_id
                 )
             )
 
-        _LOGGER.debug(
-            "Active Wger routine: %s",
-            active_routine,
-        )
-
-        _LOGGER.debug(
-            "Current week routine stats: %s",
-            routine_stats,
-        )
+            weekly_repetitions = (
+                await self.api.workouts.get_repetitions_this_week(
+                    routine_id
+                )
+            )
 
         return {
             "profile": profile,
@@ -121,6 +120,7 @@ class WgerDataUpdateCoordinator(
             "last_workout_duration": last_workout_duration,
             "days_since_last_workout": days_since_last_workout,
             "routine_stats": routine_stats,
+            "weekly_repetitions": weekly_repetitions,
         }
 
     @property
@@ -246,4 +246,15 @@ class WgerDataUpdateCoordinator(
 
         return stats.get(
             "intensity"
+        )
+
+    @property
+    def weekly_repetitions(self) -> float | None:
+        """Return the current week's repetitions."""
+
+        if self.data is None:
+            return None
+
+        return self.data.get(
+            "weekly_repetitions"
         )

@@ -214,3 +214,85 @@ class WgerWorkoutsApi:
             f"{ENDPOINT_WORKOUT_LOGS}"
             f"?limit={limit}"
         )
+
+    async def get_repetitions_this_week(
+        self,
+        routine_id: int | None = None,
+    ) -> float:
+        """Count repetitions performed during the current ISO week."""
+
+        data = await self.get_workout_logs(
+            limit=250
+        )
+
+        logs = data.get(
+            "results",
+            [],
+        )
+
+        today = datetime.now().astimezone()
+
+        current_year, current_week, _ = (
+            today.isocalendar()
+        )
+
+        total_repetitions = 0.0
+
+        for log in logs:
+            if (
+                routine_id is not None
+                and log.get("routine") != routine_id
+            ):
+                continue
+
+            date_value = log.get(
+                "date"
+            )
+
+            repetitions = log.get(
+                "repetitions"
+            )
+
+            if not date_value or repetitions is None:
+                continue
+
+            try:
+                log_date = datetime.fromisoformat(
+                    date_value.replace(
+                        "Z",
+                        "+00:00",
+                    )
+                )
+
+            except ValueError:
+                _LOGGER.warning(
+                    "Invalid workout log date: %s",
+                    date_value,
+                )
+
+                continue
+
+            (
+                log_year,
+                log_week,
+                _,
+            ) = log_date.isocalendar()
+
+            if (
+                log_year != current_year
+                or log_week != current_week
+            ):
+                continue
+
+            try:
+                total_repetitions += float(
+                    repetitions
+                )
+
+            except (TypeError, ValueError):
+                _LOGGER.warning(
+                    "Invalid repetitions value: %s",
+                    repetitions,
+                )
+
+        return total_repetitions
