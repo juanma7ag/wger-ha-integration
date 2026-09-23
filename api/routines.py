@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from ..const import ENDPOINT_ROUTINES
 from .client import WgerApiClient
 
@@ -89,3 +91,118 @@ class WgerRoutinesApi:
             f"{ENDPOINT_ROUTINES}"
             f"{routine_id}/date-sequence-gym/"
         )
+
+    async def get_current_week_stats(
+        self,
+        routine_id: int,
+    ) -> dict:
+        """Get statistics for the current ISO week."""
+
+        stats = await self.get_routine_stats(
+            routine_id
+        )
+
+        current_week = str(
+            datetime.now().isocalendar().week
+        )
+
+        weekly_stats = {
+            "week": current_week,
+            "volume": None,
+            "sets": None,
+            "intensity": None,
+        }
+
+        for metric in (
+            "volume",
+            "sets",
+            "intensity",
+        ):
+            metric_data = stats.get(
+                metric,
+                {}
+            )
+
+            weekly_data = metric_data.get(
+                "weekly",
+                {}
+            )
+
+            current_week_data = weekly_data.get(
+                current_week
+            )
+
+            if current_week_data is not None:
+                weekly_stats[metric] = (
+                    current_week_data.get(
+                        "total"
+                    )
+                )
+
+        return weekly_stats
+
+    async def get_current_week_volume(
+        self,
+        routine_id: int,
+    ) -> float | None:
+        """Get the training volume for the current week."""
+
+        stats = await self.get_current_week_stats(
+            routine_id
+        )
+
+        value = stats.get(
+            "volume"
+        )
+
+        if value is None:
+            return None
+
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    async def get_current_week_sets(
+        self,
+        routine_id: int,
+    ) -> float | None:
+        """Get the number of sets for the current week."""
+
+        stats = await self.get_current_week_stats(
+            routine_id
+        )
+
+        value = stats.get(
+            "sets"
+        )
+
+        if value is None:
+            return None
+
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None
+
+    async def get_current_week_intensity(
+        self,
+        routine_id: int,
+    ) -> float | None:
+        """Get the average intensity for the current week."""
+
+        stats = await self.get_current_week_stats(
+            routine_id
+        )
+
+        value = stats.get(
+            "intensity"
+        )
+
+        if value is None:
+            return None
+
+        try:
+            return float(value)
+        except (TypeError, ValueError):
+            return None

@@ -10,7 +10,6 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
@@ -58,6 +57,24 @@ SENSORS: tuple[
         native_unit_of_measurement="d",
         icon="mdi:calendar-clock",
     ),
+    WgerSensorEntityDescription(
+        key="weekly_volume",
+        name="Weekly Volume",
+        native_unit_of_measurement="kg",
+        icon="mdi:weight-kilogram",
+    ),
+    WgerSensorEntityDescription(
+        key="weekly_sets",
+        name="Weekly Sets",
+        native_unit_of_measurement="sets",
+        icon="mdi:counter",
+    ),
+    WgerSensorEntityDescription(
+        key="weekly_intensity",
+        name="Weekly Intensity",
+        native_unit_of_measurement="%",
+        icon="mdi:chart-line",
+    ),
 )
 
 
@@ -94,6 +111,7 @@ class WgerSensor(
         coordinator: WgerDataUpdateCoordinator,
         description: WgerSensorEntityDescription,
     ) -> None:
+        """Initialize the sensor."""
 
         super().__init__(coordinator)
 
@@ -105,15 +123,17 @@ class WgerSensor(
 
     @property
     def native_value(self):
-        """Return state."""
+        """Return sensor state."""
 
-        if self.entity_description.key == "current_weight":
+        key = self.entity_description.key
+
+        if key == "current_weight":
             return self.coordinator.current_weight
 
-        if self.entity_description.key == "trainings_this_week":
+        if key == "trainings_this_week":
             return self.coordinator.trainings_this_week
 
-        if self.entity_description.key == "last_session":
+        if key == "last_session":
             session = (
                 self.coordinator.latest_session
             )
@@ -125,10 +145,33 @@ class WgerSensor(
                 "datetime_start"
             )
 
-        if self.entity_description.key == "last_workout_duration":
-            return self.coordinator.last_workout_duration
+        if key == "last_workout_duration":
+            return (
+                self.coordinator.last_workout_duration
+            )
 
-        if self.entity_description.key == "days_since_last_workout":
-            return self.coordinator.days_since_last_workout
+        if key == "days_since_last_workout":
+            return (
+                self.coordinator.days_since_last_workout
+            )
+
+        if key == "weekly_volume":
+            return self.coordinator.weekly_volume
+
+        if key == "weekly_sets":
+            return self.coordinator.weekly_sets
+
+        if key == "weekly_intensity":
+            intensity = (
+                self.coordinator.weekly_intensity
+            )
+
+            if intensity is None:
+                return None
+
+            return round(
+                float(intensity) * 100,
+                1,
+            )
 
         return None

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from datetime import timedelta
 
 from homeassistant.core import HomeAssistant
@@ -12,6 +13,8 @@ from homeassistant.helpers.update_coordinator import (
 
 from .api import WgerApi
 from .const import DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class WgerDataUpdateCoordinator(
@@ -30,9 +33,7 @@ class WgerDataUpdateCoordinator(
 
         super().__init__(
             hass,
-            logger=__import__(
-                "logging"
-            ).getLogger(__name__),
+            logger=_LOGGER,
             name=DOMAIN,
             update_interval=timedelta(
                 minutes=30
@@ -43,7 +44,6 @@ class WgerDataUpdateCoordinator(
         """Fetch data from Wger."""
 
         (
-
             profile,
             routines,
             latest_session,
@@ -69,9 +69,50 @@ class WgerDataUpdateCoordinator(
             self.api.workouts.get_days_since_last_workout(),
         )
 
+        # Find the currently active routine.
+        active_routine = None
+
+        for routine in routines.get(
+            "results",
+            [],
+        ):
+            if routine.get(
+                "is_template",
+                False,
+            ):
+                continue
+
+            if not routine.get(
+                "is_public",
+                False,
+            ):
+                active_routine = routine
+                break
+
+        # Get statistics for the active routine.
+        routine_stats = None
+
+        if active_routine:
+            routine_stats = (
+                await self.api.routines.get_current_week_stats(
+                    active_routine["id"]
+                )
+            )
+
+        _LOGGER.debug(
+            "Active Wger routine: %s",
+            active_routine,
+        )
+
+        _LOGGER.debug(
+            "Current week routine stats: %s",
+            routine_stats,
+        )
+
         return {
             "profile": profile,
             "routines": routines,
+            "active_routine": active_routine,
             "latest_session": latest_session,
             "weights": weights,
             "measurements": measurements,
@@ -79,6 +120,7 @@ class WgerDataUpdateCoordinator(
             "current_weight": current_weight,
             "last_workout_duration": last_workout_duration,
             "days_since_last_workout": days_since_last_workout,
+            "routine_stats": routine_stats,
         }
 
     @property
@@ -116,7 +158,9 @@ class WgerDataUpdateCoordinator(
         )
 
     @property
-    def last_workout_duration(self) -> float | None:
+    def last_workout_duration(
+        self,
+    ) -> float | None:
         """Return the duration of the latest workout."""
 
         if self.data is None:
@@ -127,7 +171,9 @@ class WgerDataUpdateCoordinator(
         )
 
     @property
-    def days_since_last_workout(self) -> int | None:
+    def days_since_last_workout(
+        self,
+    ) -> int | None:
         """Return the number of days since the latest workout."""
 
         if self.data is None:
@@ -135,4 +181,69 @@ class WgerDataUpdateCoordinator(
 
         return self.data.get(
             "days_since_last_workout"
+        )
+
+    @property
+    def active_routine(self) -> dict | None:
+        """Return the active routine."""
+
+        if self.data is None:
+            return None
+
+        return self.data.get(
+            "active_routine"
+        )
+
+    @property
+    def weekly_volume(self) -> float | None:
+        """Return the current week's training volume."""
+
+        if self.data is None:
+            return None
+
+        stats = self.data.get(
+            "routine_stats"
+        )
+
+        if not stats:
+            return None
+
+        return stats.get(
+            "volume"
+        )
+
+    @property
+    def weekly_sets(self) -> float | None:
+        """Return the current week's number of sets."""
+
+        if self.data is None:
+            return None
+
+        stats = self.data.get(
+            "routine_stats"
+        )
+
+        if not stats:
+            return None
+
+        return stats.get(
+            "sets"
+        )
+
+    @property
+    def weekly_intensity(self) -> float | None:
+        """Return the current week's average intensity."""
+
+        if self.data is None:
+            return None
+
+        stats = self.data.get(
+            "routine_stats"
+        )
+
+        if not stats:
+            return None
+
+        return stats.get(
+            "intensity"
         )
