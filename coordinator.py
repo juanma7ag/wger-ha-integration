@@ -1,108 +1,108 @@
-"""Data update coordinator for Wger."""
+"""Data coordinator for Wger."""
 
 from __future__ import annotations
 
 import asyncio
-import logging
+from datetime import timedelta
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
-    UpdateFailed,
 )
 
-from .api import (
-    WgerApi,
-    WgerApiError,
-)
-
-from .const import (
-    DEFAULT_SCAN_INTERVAL,
-)
-
-_LOGGER = logging.getLogger(__name__)
+from .api import WgerApi
+from .const import DOMAIN
 
 
 class WgerDataUpdateCoordinator(
-    DataUpdateCoordinator,
+    DataUpdateCoordinator[dict]
 ):
-    """Wger coordinator."""
+    """Coordinate Wger data updates."""
 
     def __init__(
         self,
         hass: HomeAssistant,
         api: WgerApi,
     ) -> None:
+        """Initialize the coordinator."""
 
         self.api = api
 
         super().__init__(
             hass,
-            _LOGGER,
-            name="Wger",
-            update_interval=DEFAULT_SCAN_INTERVAL,
+            logger=__import__(
+                "logging"
+            ).getLogger(__name__),
+            name=DOMAIN,
+            update_interval=timedelta(
+                minutes=30
+            ),
         )
 
-    async def _async_update_data(self):
-        """Fetch all data."""
+    async def _async_update_data(self) -> dict:
+        """Fetch data from Wger."""
 
-        try:
+        (
+            profile,
+            routines,
+            latest_session,
+            weights,
+            measurements,
+            trainings_this_week,
+            current_weight,
+        ) = await asyncio.gather(
+            self.api.profile.get_profile(),
+            self.api.routines.get_routines(),
+            self.api.workouts.get_latest_session(),
+            self.api.measurements.get_weight_entries(
+                limit=50
+            ),
+            self.api.measurements.get_measurements(
+                limit=100
+            ),
+            self.api.workouts.get_trainings_this_week(),
+            self.api.measurements.get_current_weight(),
+        )
 
-            (
-                profile,
-                routines,
-                latest_session,
-                weights,
-                measurements,
-                trainings_this_week,
-                current_weight,
-            ) = await asyncio.gather(
-                self.api.get_profile(),
-                self.api.get_routines(),
-                self.api.get_latest_session(),
-                self.api.get_weight_entries(limit=50),
-                self.api.get_measurements(limit=100),
-                self.api.get_trainings_this_week(),
-                self.api.get_current_weight(),
-            )
-
-            return {
-                "profile": profile,
-                "routines": routines,
-                "latest_session": latest_session,
-                "weights": weights,
-                "measurements": measurements,
-                "trainings_this_week":
-                    trainings_this_week,
-                "current_weight":
-                    current_weight,
-            }
-
-        except WgerApiError as err:
-
-            raise UpdateFailed(
-                f"Wger API error: {err}"
-            ) from err
+        return {
+            "profile": profile,
+            "routines": routines,
+            "latest_session": latest_session,
+            "weights": weights,
+            "measurements": measurements,
+            "trainings_this_week": trainings_this_week,
+            "current_weight": current_weight,
+        }
 
     @property
-    def current_weight(self):
-        """Return current weight."""
+    def current_weight(self) -> float | None:
+        """Return current body weight."""
+
+        if self.data is None:
+            return None
 
         return self.data.get(
             "current_weight"
         )
 
     @property
-    def trainings_this_week(self):
-        """Return weekly trainings."""
+    def trainings_this_week(self) -> int:
+        """Return the number of trainings this week."""
+
+        if self.data is None:
+            return 0
 
         return self.data.get(
-            "trainings_this_week"
+            "trainings_this_week",
+            0,
         )
 
     @property
-    def latest_session(self):
-        """Return latest session."""
+    def latest_session(self) -> dict | None:
+        """Return the latest workout session."""
+
+        if self.data is None:
+            return None
 
         return self.data.get(
             "latest_session"
