@@ -184,23 +184,34 @@ class WgerDataUpdateCoordinator(
                 active_routine = routine
                 break
 
-        # Get statistics for the active routine.
+        # Get statistics and workout sequence
+        # for the active routine.
         routine_stats = None
         weekly_repetitions = None
+        todays_workout = None
+        next_workout = None
 
         if active_routine:
             routine_id = active_routine["id"]
 
-            routine_stats = (
-                await self.api.routines.get_current_week_stats(
+            (
+                routine_stats,
+                weekly_repetitions,
+                todays_workout,
+                next_workout,
+            ) = await asyncio.gather(
+                self.api.routines.get_current_week_stats(
                     routine_id
-                )
-            )
-
-            weekly_repetitions = (
-                await self.api.workouts.get_repetitions_this_week(
+                ),
+                self.api.workouts.get_repetitions_this_week(
                     routine_id
-                )
+                ),
+                self.api.routines.get_todays_workout(
+                    routine_id
+                ),
+                self.api.routines.get_next_workout(
+                    routine_id
+                ),
             )
 
             _LOGGER.debug(
@@ -218,6 +229,70 @@ class WgerDataUpdateCoordinator(
                 weekly_repetitions,
             )
 
+            _LOGGER.debug(
+                "Today's Wger workout: %s",
+                todays_workout,
+            )
+
+            _LOGGER.debug(
+                "Next Wger workout: %s",
+                next_workout,
+            )
+
+        # Calculate today's planned workout metrics.
+        # Wger returns exercise IDs in slot["exercises"]
+        # and the actual set definitions in slot["sets"].
+        todays_exercises = 0
+        todays_sets = 0
+        todays_repetitions = 0
+
+        if todays_workout:
+            for slot in todays_workout.get(
+                "slots",
+                [],
+            ):
+                exercise_ids = slot.get(
+                    "exercises",
+                    [],
+                )
+
+                todays_exercises += len(
+                    exercise_ids
+                )
+
+                for workout_set in slot.get(
+                    "sets",
+                    [],
+                ):
+                    sets = workout_set.get(
+                        "sets"
+                    )
+
+                    repetitions = workout_set.get(
+                        "repetitions"
+                    )
+
+                    try:
+                        sets_value = int(
+                            sets or 0
+                        )
+                    except (TypeError, ValueError):
+                        sets_value = 0
+
+                    try:
+                        repetitions_value = int(
+                            repetitions or 0
+                        )
+                    except (TypeError, ValueError):
+                        repetitions_value = 0
+
+                    todays_sets += sets_value
+
+                    todays_repetitions += (
+                        sets_value
+                        * repetitions_value
+                    )
+
         return {
             "profile": profile,
             "routines": routines,
@@ -231,6 +306,11 @@ class WgerDataUpdateCoordinator(
             "days_since_last_workout": days_since_last_workout,
             "routine_stats": routine_stats,
             "weekly_repetitions": weekly_repetitions,
+            "todays_workout": todays_workout,
+            "next_workout": next_workout,
+            "todays_exercises": todays_exercises,
+            "todays_sets": todays_sets,
+            "todays_repetitions": todays_repetitions,
         }
 
     @property
@@ -377,4 +457,72 @@ class WgerDataUpdateCoordinator(
 
         return self.data.get(
             "weekly_repetitions"
+        )
+
+    @property
+    def todays_workout(
+        self,
+    ) -> dict | None:
+        """Return today's planned workout."""
+
+        if self.data is None:
+            return None
+
+        return self.data.get(
+            "todays_workout"
+        )
+
+    @property
+    def next_workout(
+        self,
+    ) -> dict | None:
+        """Return the next planned workout."""
+
+        if self.data is None:
+            return None
+
+        return self.data.get(
+            "next_workout"
+        )
+
+    @property
+    def todays_exercises(
+        self,
+    ) -> int:
+        """Return the number of exercises planned today."""
+
+        if self.data is None:
+            return 0
+
+        return self.data.get(
+            "todays_exercises",
+            0,
+        )
+
+    @property
+    def todays_sets(
+        self,
+    ) -> int:
+        """Return the number of sets planned today."""
+
+        if self.data is None:
+            return 0
+
+        return self.data.get(
+            "todays_sets",
+            0,
+        )
+
+    @property
+    def todays_repetitions(
+        self,
+    ) -> int:
+        """Return the number of repetitions planned today."""
+
+        if self.data is None:
+            return 0
+
+        return self.data.get(
+            "todays_repetitions",
+            0,
         )

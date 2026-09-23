@@ -81,6 +81,28 @@ SENSORS: tuple[
         native_unit_of_measurement="reps",
         icon="mdi:repeat",
     ),
+    WgerSensorEntityDescription(
+        key="todays_workout",
+        name="Today's Workout",
+        icon="mdi:calendar-today",
+    ),
+    WgerSensorEntityDescription(
+        key="todays_exercises",
+        name="Today's Exercises",
+        icon="mdi:dumbbell",
+    ),
+    WgerSensorEntityDescription(
+        key="todays_sets",
+        name="Today's Sets",
+        native_unit_of_measurement="sets",
+        icon="mdi:counter",
+    ),
+    WgerSensorEntityDescription(
+        key="todays_repetitions",
+        name="Today's Repetitions",
+        native_unit_of_measurement="reps",
+        icon="mdi:repeat",
+    ),
 )
 
 
@@ -185,4 +207,150 @@ class WgerSensor(
                 self.coordinator.weekly_repetitions
             )
 
+        if key == "todays_workout":
+            workout = (
+                self.coordinator.todays_workout
+            )
+
+            if not workout:
+                return None
+
+            return workout.get(
+                "day",
+                {},
+            ).get(
+                "name"
+            )
+
+        if key == "todays_exercises":
+            return (
+                self.coordinator.todays_exercises
+            )
+
+        if key == "todays_sets":
+            return (
+                self.coordinator.todays_sets
+            )
+
+        if key == "todays_repetitions":
+            return (
+                self.coordinator.todays_repetitions
+            )
+
         return None
+
+    @property
+    def extra_state_attributes(self):
+        """Return additional state attributes."""
+
+        if (
+            self.entity_description.key
+            != "todays_workout"
+        ):
+            return None
+
+        workout = (
+            self.coordinator.todays_workout
+        )
+
+        if not workout:
+            return None
+
+        day = workout.get(
+            "day",
+            {},
+        )
+
+        attributes = {
+            "date": workout.get(
+                "date"
+            ),
+            "day_id": day.get(
+                "id"
+            ),
+            "order": day.get(
+                "order"
+            ),
+            "iteration": workout.get(
+                "iteration"
+            ),
+            "is_rest": day.get(
+                "is_rest"
+            ),
+            "need_logs_to_advance": day.get(
+                "need_logs_to_advance"
+            ),
+            "type": day.get(
+                "type"
+            ),
+            "description": day.get(
+                "description"
+            ),
+        }
+
+        exercises = []
+
+        for slot in workout.get(
+            "slots",
+            [],
+        ):
+            for exercise_id in slot.get(
+                "exercises",
+                [],
+            ):
+                exercise_data = {
+                    "exercise_id": exercise_id,
+                    "sets": [],
+                }
+
+                for workout_set in slot.get(
+                    "sets",
+                    [],
+                ):
+                    if workout_set.get(
+                        "exercise"
+                    ) != exercise_id:
+                        continue
+
+                    exercise_data["sets"].append(
+                        {
+                            "sets": workout_set.get(
+                                "sets"
+                            ),
+                            "repetitions": workout_set.get(
+                                "repetitions"
+                            ),
+                            "weight": workout_set.get(
+                                "weight"
+                            ),
+                            "weight_unit": workout_set.get(
+                                "weight_unit"
+                            ),
+                            "rir": workout_set.get(
+                                "rir"
+                            ),
+                            "rpe": workout_set.get(
+                                "rpe"
+                            ),
+                            "rest": workout_set.get(
+                                "rest"
+                            ),
+                            "type": workout_set.get(
+                                "type"
+                            ),
+                            "text_repr": workout_set.get(
+                                "text_repr"
+                            ),
+                            "comment": workout_set.get(
+                                "comment"
+                            ),
+                        }
+                    )
+
+                exercises.append(
+                    exercise_data
+                )
+
+        attributes["exercises"] = exercises
+
+        return attributes

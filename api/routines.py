@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 
 from ..const import ENDPOINT_ROUTINES
 from .client import WgerApiClient
@@ -91,6 +91,70 @@ class WgerRoutinesApi:
             f"{ENDPOINT_ROUTINES}"
             f"{routine_id}/date-sequence-gym/"
         )
+
+    async def get_todays_workout(
+        self,
+        routine_id: int,
+    ) -> dict | None:
+        """Get the workout scheduled for today."""
+
+        sequence = await self.get_routine_date_sequence_display(
+            routine_id
+        )
+
+        today = date.today().isoformat()
+
+        if isinstance(sequence, list):
+            entries = sequence
+        else:
+            entries = sequence.get(
+                "results",
+                [],
+            )
+
+        for entry in entries:
+            if entry.get("date") == today:
+                return entry
+
+        return None
+
+    async def get_next_workout(
+        self,
+        routine_id: int,
+    ) -> dict | None:
+        """Get the next workout scheduled after today."""
+
+        sequence = await self.get_routine_date_sequence_display(
+            routine_id
+        )
+
+        today = date.today().isoformat()
+
+        if isinstance(sequence, list):
+            entries = sequence
+        else:
+            entries = sequence.get(
+                "results",
+                [],
+            )
+
+        future_entries = [
+            entry
+            for entry in entries
+            if entry.get("date", "") > today
+        ]
+
+        if not future_entries:
+            return None
+
+        future_entries.sort(
+            key=lambda entry: entry.get(
+                "date",
+                "",
+            )
+        )
+
+        return future_entries[0]
 
     async def get_current_week_stats(
         self,
