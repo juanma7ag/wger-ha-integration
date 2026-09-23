@@ -408,6 +408,73 @@ class WgerDataUpdateCoordinator(
                         * repetitions_value
                     )
 
+        # Calculate next workout planned metrics.
+        next_exercises = 0
+        next_sets = 0
+        next_repetitions = 0
+
+        if next_workout:
+            for slot in next_workout.get(
+                "slots",
+                [],
+            ):
+                exercise_ids = slot.get(
+                    "exercises",
+                    [],
+                )
+
+                next_exercises += len(
+                    exercise_ids
+                )
+
+                for workout_set in slot.get(
+                    "sets",
+                    [],
+                ):
+                    sets = workout_set.get(
+                        "sets"
+                    )
+
+                    repetitions = workout_set.get(
+                        "repetitions"
+                    )
+
+                    try:
+                        sets_value = int(
+                            sets or 0
+                        )
+
+                    except (
+                        TypeError,
+                        ValueError,
+                    ):
+                        sets_value = 0
+
+                    try:
+                        repetitions_value = int(
+                            repetitions or 0
+                        )
+
+                    except (
+                        TypeError,
+                        ValueError,
+                    ):
+                        repetitions_value = 0
+
+                    next_sets += sets_value
+
+                    next_repetitions += (
+                        sets_value
+                        * repetitions_value
+                    )
+
+        _LOGGER.debug(
+            "Next workout metrics: exercises=%s, sets=%s, repetitions=%s",
+            next_exercises,
+            next_sets,
+            next_repetitions,
+        )
+
         return {
             "profile": profile,
             "routines": routines,
@@ -426,6 +493,9 @@ class WgerDataUpdateCoordinator(
             "todays_exercises": todays_exercises,
             "todays_sets": todays_sets,
             "todays_repetitions": todays_repetitions,
+            "next_exercises": next_exercises,
+            "next_sets": next_sets,
+            "next_repetitions": next_repetitions,
         }
 
     @property
@@ -615,5 +685,41 @@ class WgerDataUpdateCoordinator(
 
         return self.data.get(
             "todays_repetitions",
+            0,
+        )
+
+    @property
+    def next_exercises(
+        self,
+    ) -> int:
+        if self.data is None:
+            return 0
+
+        return self.data.get(
+            "next_exercises",
+            0,
+        )
+
+    @property
+    def next_sets(
+        self,
+    ) -> int:
+        if self.data is None:
+            return 0
+
+        return self.data.get(
+            "next_sets",
+            0,
+        )
+
+    @property
+    def next_repetitions(
+        self,
+    ) -> int:
+        if self.data is None:
+            return 0
+
+        return self.data.get(
+            "next_repetitions",
             0,
         )

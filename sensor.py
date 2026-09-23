@@ -103,13 +103,35 @@ SENSORS: tuple[
         native_unit_of_measurement="reps",
         icon="mdi:repeat",
     ),
+    WgerSensorEntityDescription(
+        key="next_workout",
+        name="Next Workout",
+        icon="mdi:calendar-arrow-right",
+    ),
+    WgerSensorEntityDescription(
+        key="next_exercises",
+        name="Next Exercises",
+        icon="mdi:dumbbell-arrow-right",
+    ),
+    WgerSensorEntityDescription(
+        key="next_sets",
+        name="Next Sets",
+        native_unit_of_measurement="sets",
+        icon="mdi:counter",
+    ),
+    WgerSensorEntityDescription(
+        key="next_repetitions",
+        name="Next Repetitions",
+        native_unit_of_measurement="reps",
+        icon="mdi:repeat",
+    ),
 )
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
-    entry: ConfigEntry,
-    async_add_entities,
+        hass: HomeAssistant,
+        entry: ConfigEntry,
+        async_add_entities,
 ) -> None:
     """Set up sensors."""
 
@@ -135,9 +157,9 @@ class WgerSensor(
     entity_description: WgerSensorEntityDescription
 
     def __init__(
-        self,
-        coordinator: WgerDataUpdateCoordinator,
-        description: WgerSensorEntityDescription,
+            self,
+            coordinator: WgerDataUpdateCoordinator,
+            description: WgerSensorEntityDescription,
     ) -> None:
         """Initialize the sensor."""
 
@@ -237,20 +259,47 @@ class WgerSensor(
                 self.coordinator.todays_repetitions
             )
 
+        if key == "next_workout":
+            workout = (
+                self.coordinator.next_workout
+            )
+
+            if not workout:
+                return None
+
+            return workout.get(
+                "day",
+                {},
+            ).get(
+                "name"
+            )
+
+        if key == "next_exercises":
+            return self.coordinator.next_exercises
+
+        if key == "next_sets":
+            return self.coordinator.next_sets
+
+        if key == "next_repetitions":
+            return self.coordinator.next_repetitions
+
         return None
 
     @property
     def extra_state_attributes(self):
-        """Return additional state attributes."""
+        """Return additional state attributes for today's or next workout."""
 
-        if (
-            self.entity_description.key
-            != "todays_workout"
+        if self.entity_description.key not in (
+                "todays_workout",
+                "next_workout",
         ):
             return None
 
         workout = (
             self.coordinator.todays_workout
+            if self.entity_description.key
+               == "todays_workout"
+            else self.coordinator.next_workout
         )
 
         if not workout:
@@ -293,15 +342,37 @@ class WgerSensor(
             ),
         }
 
+        attributes["workout_name"] = day.get(
+            "name"
+        )
+
+        attributes["exercise_count"] = len(
+            [
+                exercise_id
+                for slot in workout.get(
+                "slots",
+                [],
+            )
+                for exercise_id in slot.get(
+                "exercises",
+                [],
+            )
+            ]
+        )
+
+        attributes["total_sets"] = 0
+        attributes["total_repetitions"] = 0
+        attributes["exercise_names"] = []
+
         exercises = []
 
         for slot in workout.get(
-            "slots",
-            [],
+                "slots",
+                [],
         ):
             for exercise_id in slot.get(
-                "exercises",
-                [],
+                    "exercises",
+                    [],
             ):
                 details = exercise_details.get(
                     str(exercise_id),
@@ -324,58 +395,155 @@ class WgerSensor(
                         "muscles_secondary",
                         [],
                     ),
+                    "muscle_names": [
+                        muscle.get("name")
+                        for muscle in details.get(
+                            "muscles",
+                            [],
+                        )
+                        if muscle.get("name")
+                    ],
+                    "muscle_names_secondary": [
+                        muscle.get("name")
+                        for muscle in details.get(
+                            "muscles_secondary",
+                            [],
+                        )
+                        if muscle.get("name")
+                    ],
                     "equipment": details.get(
                         "equipment",
                         [],
                     ),
+                    "equipment_names": [
+                        item.get("name")
+                        for item in details.get(
+                            "equipment",
+                            [],
+                        )
+                        if item.get("name")
+                    ],
                     "image": details.get(
                         "image"
                     ),
+                    "thumbnail_small": details.get(
+                        "thumbnail_small"
+                    ),
+                    "thumbnail_medium": details.get(
+                        "thumbnail_medium"
+                    ),
+                    "description": details.get(
+                        "description"
+                    ),
+                    "notes": details.get(
+                        "notes",
+                        [],
+                    ),
+                    "images": details.get(
+                        "images",
+                        [],
+                    ),
+                    "videos": details.get(
+                        "videos",
+                        [],
+                    ),
+                    "variation_group": details.get(
+                        "variation_group"
+                    ),
                     "sets": [],
+                    "total_sets": 0,
+                    "total_repetitions": 0,
                 }
 
                 for workout_set in slot.get(
-                    "sets",
-                    [],
+                        "sets",
+                        [],
                 ):
                     if workout_set.get(
-                        "exercise"
+                            "exercise"
                     ) != exercise_id:
                         continue
 
+                    set_data = {
+                        "sets": workout_set.get(
+                            "sets"
+                        ),
+                        "repetitions": workout_set.get(
+                            "repetitions"
+                        ),
+                        "weight": workout_set.get(
+                            "weight"
+                        ),
+                        "weight_unit": workout_set.get(
+                            "weight_unit"
+                        ),
+                        "rir": workout_set.get(
+                            "rir"
+                        ),
+                        "rpe": workout_set.get(
+                            "rpe"
+                        ),
+                        "rest": workout_set.get(
+                            "rest"
+                        ),
+                        "type": workout_set.get(
+                            "type"
+                        ),
+                        "text_repr": workout_set.get(
+                            "text_repr"
+                        ),
+                        "comment": workout_set.get(
+                            "comment"
+                        ),
+                    }
+
                     exercise_data["sets"].append(
-                        {
-                            "sets": workout_set.get(
+                        set_data
+                    )
+
+                    try:
+                        sets_value = int(
+                            workout_set.get(
                                 "sets"
-                            ),
-                            "repetitions": workout_set.get(
+                            ) or 0
+                        )
+                    except (
+                            TypeError,
+                            ValueError,
+                    ):
+                        sets_value = 0
+
+                    try:
+                        repetitions_value = int(
+                            workout_set.get(
                                 "repetitions"
-                            ),
-                            "weight": workout_set.get(
-                                "weight"
-                            ),
-                            "weight_unit": workout_set.get(
-                                "weight_unit"
-                            ),
-                            "rir": workout_set.get(
-                                "rir"
-                            ),
-                            "rpe": workout_set.get(
-                                "rpe"
-                            ),
-                            "rest": workout_set.get(
-                                "rest"
-                            ),
-                            "type": workout_set.get(
-                                "type"
-                            ),
-                            "text_repr": workout_set.get(
-                                "text_repr"
-                            ),
-                            "comment": workout_set.get(
-                                "comment"
-                            ),
-                        }
+                            ) or 0
+                        )
+                    except (
+                            TypeError,
+                            ValueError,
+                    ):
+                        repetitions_value = 0
+
+                    exercise_data["total_sets"] += (
+                        sets_value
+                    )
+
+                    exercise_data["total_repetitions"] += (
+                            sets_value * repetitions_value
+                    )
+
+                    attributes["total_sets"] += (
+                        sets_value
+                    )
+
+                    attributes["total_repetitions"] += (
+                            sets_value * repetitions_value
+                    )
+
+                if exercise_data["name"]:
+                    attributes["exercise_names"].append(
+                        exercise_data["name"]
                     )
 
                 exercises.append(
