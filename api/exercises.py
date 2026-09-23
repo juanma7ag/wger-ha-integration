@@ -51,6 +51,9 @@ class WgerExercisesApi:
             f"{exercise_id}/"
         )
 
+        if data:
+            self._exercise_cache[exercise_id] = data
+
         return data
 
     async def build_exercise_cache(

@@ -261,6 +261,11 @@ class WgerSensor(
             {},
         )
 
+        exercise_names = workout.get(
+            "exercise_names",
+            {},
+        )
+
         attributes = {
             "date": workout.get(
                 "date"
@@ -300,6 +305,9 @@ class WgerSensor(
             ):
                 exercise_data = {
                     "exercise_id": exercise_id,
+                    "name": exercise_names.get(
+                        str(exercise_id)
+                    ),
                     "sets": [],
                 }
 

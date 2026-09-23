@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from copy import deepcopy
 from datetime import date, datetime, timedelta
 
 from homeassistant.core import HomeAssistant
@@ -239,6 +240,97 @@ class WgerDataUpdateCoordinator(
                 next_workout,
             )
 
+        # Resolve exercise IDs to exercise names.
+        #
+        # Keep the original Wger workout structure intact and
+        # add an exercise_names dictionary to each workout.
+        exercise_ids: set[int] = set()
+
+        for workout in (
+            todays_workout,
+            next_workout,
+        ):
+            if not workout:
+                continue
+
+            for slot in workout.get(
+                "slots",
+                [],
+            ):
+                for exercise_id in slot.get(
+                    "exercises",
+                    [],
+                ):
+                    try:
+                        exercise_ids.add(
+                            int(exercise_id)
+                        )
+                    except (
+                        TypeError,
+                        ValueError,
+                    ):
+                        _LOGGER.warning(
+                            "Invalid Wger exercise ID: %s",
+                            exercise_id,
+                        )
+
+        exercise_names: dict[int, str] = {}
+
+        if exercise_ids:
+            exercise_results = await asyncio.gather(
+                *(
+                    self.api.exercises.get_exercise(
+                        exercise_id
+                    )
+                    for exercise_id in exercise_ids
+                )
+            )
+
+            for exercise_id, exercise in zip(
+                exercise_ids,
+                exercise_results,
+                strict=False,
+            ):
+                if not exercise:
+                    continue
+
+                name = exercise.get(
+                    "name"
+                )
+
+                if name:
+                    exercise_names[
+                        exercise_id
+                    ] = name
+
+        # Enrich today's workout with exercise names.
+        if todays_workout:
+            todays_workout = deepcopy(
+                todays_workout
+            )
+
+            todays_workout[
+                "exercise_names"
+            ] = {
+                str(exercise_id): name
+                for exercise_id, name
+                in exercise_names.items()
+            }
+
+        # Enrich next workout with exercise names.
+        if next_workout:
+            next_workout = deepcopy(
+                next_workout
+            )
+
+            next_workout[
+                "exercise_names"
+            ] = {
+                str(exercise_id): name
+                for exercise_id, name
+                in exercise_names.items()
+            }
+
         # Calculate today's planned workout metrics.
         # Wger returns exercise IDs in slot["exercises"]
         # and the actual set definitions in slot["sets"].
@@ -292,6 +384,11 @@ class WgerDataUpdateCoordinator(
                         sets_value
                         * repetitions_value
                     )
+
+        _LOGGER.debug(
+            "Resolved Wger exercise names: %s",
+            exercise_names,
+        )
 
         return {
             "profile": profile,
