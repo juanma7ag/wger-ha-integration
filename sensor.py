@@ -261,8 +261,8 @@ class WgerSensor(
             {},
         )
 
-        exercise_names = workout.get(
-            "exercise_names",
+        exercise_details = workout.get(
+            "exercise_details",
             {},
         )
 
@@ -303,10 +303,33 @@ class WgerSensor(
                 "exercises",
                 [],
             ):
+                details = exercise_details.get(
+                    str(exercise_id),
+                    {},
+                )
+
                 exercise_data = {
                     "exercise_id": exercise_id,
-                    "name": exercise_names.get(
-                        str(exercise_id)
+                    "name": details.get(
+                        "name"
+                    ),
+                    "category": details.get(
+                        "category"
+                    ),
+                    "muscles": details.get(
+                        "muscles",
+                        [],
+                    ),
+                    "muscles_secondary": details.get(
+                        "muscles_secondary",
+                        [],
+                    ),
+                    "equipment": details.get(
+                        "equipment",
+                        [],
+                    ),
+                    "image": details.get(
+                        "image"
                     ),
                     "sets": [],
                 }

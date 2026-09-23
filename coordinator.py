@@ -75,6 +75,7 @@ class WgerDataUpdateCoordinator(
             start = latest_session.get(
                 "datetime_start"
             )
+
             end = latest_session.get(
                 "datetime_end"
             )
@@ -132,8 +133,8 @@ class WgerDataUpdateCoordinator(
                         start,
                     )
 
-        # Find the currently active routine based
-        # on its date range.
+        # Find the currently active routine based on
+        # its date range.
         active_routine = None
         today = date.today()
 
@@ -156,6 +157,7 @@ class WgerDataUpdateCoordinator(
             start = routine.get(
                 "start"
             )
+
             end = routine.get(
                 "end"
             )
@@ -181,7 +183,11 @@ class WgerDataUpdateCoordinator(
 
                 continue
 
-            if start_date <= today <= end_date:
+            if (
+                start_date
+                <= today
+                <= end_date
+            ):
                 active_routine = routine
                 break
 
@@ -193,7 +199,9 @@ class WgerDataUpdateCoordinator(
         next_workout = None
 
         if active_routine:
-            routine_id = active_routine["id"]
+            routine_id = active_routine[
+                "id"
+            ]
 
             (
                 routine_stats,
@@ -240,10 +248,8 @@ class WgerDataUpdateCoordinator(
                 next_workout,
             )
 
-        # Resolve exercise IDs to exercise names.
-        #
-        # Keep the original Wger workout structure intact and
-        # add an exercise_names dictionary to each workout.
+        # Resolve exercise IDs to detailed exercise
+        # information.
         exercise_ids: set[int] = set()
 
         for workout in (
@@ -265,6 +271,7 @@ class WgerDataUpdateCoordinator(
                         exercise_ids.add(
                             int(exercise_id)
                         )
+
                     except (
                         TypeError,
                         ValueError,
@@ -274,66 +281,74 @@ class WgerDataUpdateCoordinator(
                             exercise_id,
                         )
 
-        exercise_names: dict[int, str] = {}
+        exercise_details: dict[
+            int,
+            dict,
+        ] = {}
 
         if exercise_ids:
-            exercise_results = await asyncio.gather(
-                *(
-                    self.api.exercises.get_exercise(
-                        exercise_id
+            exercise_details_results = (
+                await asyncio.gather(
+                    *(
+                        self.api.exercises.get_exercise_details(
+                            exercise_id
+                        )
+                        for exercise_id in exercise_ids
                     )
-                    for exercise_id in exercise_ids
                 )
             )
 
-            for exercise_id, exercise in zip(
+            for (
+                exercise_id,
+                details,
+            ) in zip(
                 exercise_ids,
-                exercise_results,
+                exercise_details_results,
                 strict=False,
             ):
-                if not exercise:
-                    continue
-
-                name = exercise.get(
-                    "name"
-                )
-
-                if name:
-                    exercise_names[
+                if details:
+                    exercise_details[
                         exercise_id
-                    ] = name
+                    ] = details
 
-        # Enrich today's workout with exercise names.
+        _LOGGER.debug(
+            "Resolved Wger exercise details: %s",
+            exercise_details,
+        )
+
+        # Enrich today's workout with exercise details.
         if todays_workout:
             todays_workout = deepcopy(
                 todays_workout
             )
 
             todays_workout[
-                "exercise_names"
+                "exercise_details"
             ] = {
-                str(exercise_id): name
-                for exercise_id, name
-                in exercise_names.items()
+                str(exercise_id): details
+                for (
+                    exercise_id,
+                    details,
+                ) in exercise_details.items()
             }
 
-        # Enrich next workout with exercise names.
+        # Enrich next workout with exercise details.
         if next_workout:
             next_workout = deepcopy(
                 next_workout
             )
 
             next_workout[
-                "exercise_names"
+                "exercise_details"
             ] = {
-                str(exercise_id): name
-                for exercise_id, name
-                in exercise_names.items()
+                str(exercise_id): details
+                for (
+                    exercise_id,
+                    details,
+                ) in exercise_details.items()
             }
 
         # Calculate today's planned workout metrics.
-        # Wger returns exercise IDs in slot["exercises"]
-        # and the actual set definitions in slot["sets"].
         todays_exercises = 0
         todays_sets = 0
         todays_repetitions = 0
@@ -345,7 +360,7 @@ class WgerDataUpdateCoordinator(
             ):
                 exercise_ids = slot.get(
                     "exercises",
-                    [],
+                    []
                 )
 
                 todays_exercises += len(
@@ -368,14 +383,22 @@ class WgerDataUpdateCoordinator(
                         sets_value = int(
                             sets or 0
                         )
-                    except (TypeError, ValueError):
+
+                    except (
+                        TypeError,
+                        ValueError,
+                    ):
                         sets_value = 0
 
                     try:
                         repetitions_value = int(
                             repetitions or 0
                         )
-                    except (TypeError, ValueError):
+
+                    except (
+                        TypeError,
+                        ValueError,
+                    ):
                         repetitions_value = 0
 
                     todays_sets += sets_value
@@ -384,11 +407,6 @@ class WgerDataUpdateCoordinator(
                         sets_value
                         * repetitions_value
                     )
-
-        _LOGGER.debug(
-            "Resolved Wger exercise names: %s",
-            exercise_names,
-        )
 
         return {
             "profile": profile,
@@ -411,9 +429,9 @@ class WgerDataUpdateCoordinator(
         }
 
     @property
-    def current_weight(self) -> float | None:
-        """Return current body weight."""
-
+    def current_weight(
+        self,
+    ) -> float | None:
         if self.data is None:
             return None
 
@@ -422,9 +440,9 @@ class WgerDataUpdateCoordinator(
         )
 
     @property
-    def trainings_this_week(self) -> int:
-        """Return the number of trainings this week."""
-
+    def trainings_this_week(
+        self,
+    ) -> int:
         if self.data is None:
             return 0
 
@@ -434,9 +452,9 @@ class WgerDataUpdateCoordinator(
         )
 
     @property
-    def latest_session(self) -> dict | None:
-        """Return the latest workout session."""
-
+    def latest_session(
+        self,
+    ) -> dict | None:
         if self.data is None:
             return None
 
@@ -448,8 +466,6 @@ class WgerDataUpdateCoordinator(
     def last_workout_duration(
         self,
     ) -> float | None:
-        """Return the duration of the latest workout."""
-
         if self.data is None:
             return None
 
@@ -461,8 +477,6 @@ class WgerDataUpdateCoordinator(
     def days_since_last_workout(
         self,
     ) -> int | None:
-        """Return the number of days since the latest workout."""
-
         if self.data is None:
             return None
 
@@ -474,8 +488,6 @@ class WgerDataUpdateCoordinator(
     def active_routine(
         self,
     ) -> dict | None:
-        """Return the active routine."""
-
         if self.data is None:
             return None
 
@@ -487,8 +499,6 @@ class WgerDataUpdateCoordinator(
     def weekly_volume(
         self,
     ) -> float | None:
-        """Return the current week's training volume."""
-
         if self.data is None:
             return None
 
@@ -507,8 +517,6 @@ class WgerDataUpdateCoordinator(
     def weekly_sets(
         self,
     ) -> float | None:
-        """Return the current week's number of sets."""
-
         if self.data is None:
             return None
 
@@ -527,8 +535,6 @@ class WgerDataUpdateCoordinator(
     def weekly_intensity(
         self,
     ) -> float | None:
-        """Return the current week's average intensity."""
-
         if self.data is None:
             return None
 
@@ -547,8 +553,6 @@ class WgerDataUpdateCoordinator(
     def weekly_repetitions(
         self,
     ) -> float | None:
-        """Return the current week's repetitions."""
-
         if self.data is None:
             return None
 
@@ -560,8 +564,6 @@ class WgerDataUpdateCoordinator(
     def todays_workout(
         self,
     ) -> dict | None:
-        """Return today's planned workout."""
-
         if self.data is None:
             return None
 
@@ -573,8 +575,6 @@ class WgerDataUpdateCoordinator(
     def next_workout(
         self,
     ) -> dict | None:
-        """Return the next planned workout."""
-
         if self.data is None:
             return None
 
@@ -586,8 +586,6 @@ class WgerDataUpdateCoordinator(
     def todays_exercises(
         self,
     ) -> int:
-        """Return the number of exercises planned today."""
-
         if self.data is None:
             return 0
 
@@ -600,8 +598,6 @@ class WgerDataUpdateCoordinator(
     def todays_sets(
         self,
     ) -> int:
-        """Return the number of sets planned today."""
-
         if self.data is None:
             return 0
 
@@ -614,8 +610,6 @@ class WgerDataUpdateCoordinator(
     def todays_repetitions(
         self,
     ) -> int:
-        """Return the number of repetitions planned today."""
-
         if self.data is None:
             return 0
 
