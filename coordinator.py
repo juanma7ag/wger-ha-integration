@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import (
@@ -23,9 +23,9 @@ class WgerDataUpdateCoordinator(
     """Coordinate Wger data updates."""
 
     def __init__(
-            self,
-            hass: HomeAssistant,
-            api: WgerApi,
+        self,
+        hass: HomeAssistant,
+        api: WgerApi,
     ) -> None:
         """Initialize the coordinator."""
 
@@ -96,7 +96,7 @@ class WgerDataUpdateCoordinator(
 
                     last_workout_duration = round(
                         (
-                                end_dt - start_dt
+                            end_dt - start_dt
                         ).total_seconds()
                         / 60,
                         1,
@@ -121,8 +121,8 @@ class WgerDataUpdateCoordinator(
                     now = datetime.now().astimezone()
 
                     days_since_last_workout = (
-                            now.date()
-                            - workout_dt.date()
+                        now.date()
+                        - workout_dt.date()
                     ).days
 
                 except ValueError:
@@ -131,23 +131,56 @@ class WgerDataUpdateCoordinator(
                         start,
                     )
 
-        # Find the currently active routine.
+        # Find the currently active routine based
+        # on its date range.
         active_routine = None
+        today = date.today()
 
         for routine in routines.get(
-                "results",
-                [],
+            "results",
+            [],
         ):
             if routine.get(
-                    "is_template",
-                    False,
+                "is_template",
+                False,
             ):
                 continue
 
-            if not routine.get(
-                    "is_public",
-                    False,
+            if routine.get(
+                "is_public",
+                False,
             ):
+                continue
+
+            start = routine.get(
+                "start"
+            )
+            end = routine.get(
+                "end"
+            )
+
+            if not start or not end:
+                continue
+
+            try:
+                start_date = date.fromisoformat(
+                    start
+                )
+
+                end_date = date.fromisoformat(
+                    end
+                )
+
+            except ValueError:
+                _LOGGER.warning(
+                    "Invalid routine dates: %s - %s",
+                    start,
+                    end,
+                )
+
+                continue
+
+            if start_date <= today <= end_date:
                 active_routine = routine
                 break
 
@@ -236,7 +269,7 @@ class WgerDataUpdateCoordinator(
 
     @property
     def last_workout_duration(
-            self,
+        self,
     ) -> float | None:
         """Return the duration of the latest workout."""
 
@@ -249,7 +282,7 @@ class WgerDataUpdateCoordinator(
 
     @property
     def days_since_last_workout(
-            self,
+        self,
     ) -> int | None:
         """Return the number of days since the latest workout."""
 
@@ -261,7 +294,9 @@ class WgerDataUpdateCoordinator(
         )
 
     @property
-    def active_routine(self) -> dict | None:
+    def active_routine(
+        self,
+    ) -> dict | None:
         """Return the active routine."""
 
         if self.data is None:
@@ -272,7 +307,9 @@ class WgerDataUpdateCoordinator(
         )
 
     @property
-    def weekly_volume(self) -> float | None:
+    def weekly_volume(
+        self,
+    ) -> float | None:
         """Return the current week's training volume."""
 
         if self.data is None:
@@ -290,7 +327,9 @@ class WgerDataUpdateCoordinator(
         )
 
     @property
-    def weekly_sets(self) -> float | None:
+    def weekly_sets(
+        self,
+    ) -> float | None:
         """Return the current week's number of sets."""
 
         if self.data is None:
@@ -308,7 +347,9 @@ class WgerDataUpdateCoordinator(
         )
 
     @property
-    def weekly_intensity(self) -> float | None:
+    def weekly_intensity(
+        self,
+    ) -> float | None:
         """Return the current week's average intensity."""
 
         if self.data is None:
@@ -326,7 +367,9 @@ class WgerDataUpdateCoordinator(
         )
 
     @property
-    def weekly_repetitions(self) -> float | None:
+    def weekly_repetitions(
+        self,
+    ) -> float | None:
         """Return the current week's repetitions."""
 
         if self.data is None:
