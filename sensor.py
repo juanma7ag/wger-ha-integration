@@ -46,6 +46,18 @@ SENSORS: tuple[
         name="Last Session",
         icon="mdi:history",
     ),
+    WgerSensorEntityDescription(
+        key="last_workout_duration",
+        name="Last Workout Duration",
+        native_unit_of_measurement="min",
+        icon="mdi:timer-outline",
+    ),
+    WgerSensorEntityDescription(
+        key="days_since_last_workout",
+        name="Days Since Last Workout",
+        native_unit_of_measurement="d",
+        icon="mdi:calendar-clock",
+    ),
 )
 
 
@@ -102,7 +114,6 @@ class WgerSensor(
             return self.coordinator.trainings_this_week
 
         if self.entity_description.key == "last_session":
-
             session = (
                 self.coordinator.latest_session
             )
@@ -113,5 +124,11 @@ class WgerSensor(
             return session.get(
                 "datetime_start"
             )
+
+        if self.entity_description.key == "last_workout_duration":
+            return self.coordinator.last_workout_duration
+
+        if self.entity_description.key == "days_since_last_workout":
+            return self.coordinator.days_since_last_workout
 
         return None

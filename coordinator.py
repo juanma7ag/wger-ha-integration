@@ -43,6 +43,7 @@ class WgerDataUpdateCoordinator(
         """Fetch data from Wger."""
 
         (
+
             profile,
             routines,
             latest_session,
@@ -50,6 +51,8 @@ class WgerDataUpdateCoordinator(
             measurements,
             trainings_this_week,
             current_weight,
+            last_workout_duration,
+            days_since_last_workout,
         ) = await asyncio.gather(
             self.api.profile.get_profile(),
             self.api.routines.get_routines(),
@@ -62,6 +65,8 @@ class WgerDataUpdateCoordinator(
             ),
             self.api.workouts.get_trainings_this_week(),
             self.api.measurements.get_current_weight(),
+            self.api.workouts.get_last_workout_duration(),
+            self.api.workouts.get_days_since_last_workout(),
         )
 
         return {
@@ -72,6 +77,8 @@ class WgerDataUpdateCoordinator(
             "measurements": measurements,
             "trainings_this_week": trainings_this_week,
             "current_weight": current_weight,
+            "last_workout_duration": last_workout_duration,
+            "days_since_last_workout": days_since_last_workout,
         }
 
     @property
@@ -106,4 +113,26 @@ class WgerDataUpdateCoordinator(
 
         return self.data.get(
             "latest_session"
+        )
+
+    @property
+    def last_workout_duration(self) -> float | None:
+        """Return the duration of the latest workout."""
+
+        if self.data is None:
+            return None
+
+        return self.data.get(
+            "last_workout_duration"
+        )
+
+    @property
+    def days_since_last_workout(self) -> int | None:
+        """Return the number of days since the latest workout."""
+
+        if self.data is None:
+            return None
+
+        return self.data.get(
+            "days_since_last_workout"
         )
