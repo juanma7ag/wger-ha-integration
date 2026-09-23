@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import (
@@ -23,9 +23,9 @@ class WgerDataUpdateCoordinator(
     """Coordinate Wger data updates."""
 
     def __init__(
-        self,
-        hass: HomeAssistant,
-        api: WgerApi,
+            self,
+            hass: HomeAssistant,
+            api: WgerApi,
     ) -> None:
         """Initialize the coordinator."""
 
@@ -51,8 +51,6 @@ class WgerDataUpdateCoordinator(
             measurements,
             trainings_this_week,
             current_weight,
-            last_workout_duration,
-            days_since_last_workout,
         ) = await asyncio.gather(
             self.api.profile.get_profile(),
             self.api.routines.get_routines(),
@@ -65,26 +63,90 @@ class WgerDataUpdateCoordinator(
             ),
             self.api.workouts.get_trainings_this_week(),
             self.api.measurements.get_current_weight(),
-            self.api.workouts.get_last_workout_duration(),
-            self.api.workouts.get_days_since_last_workout(),
         )
+
+        # Calculate workout metrics from the already
+        # fetched latest session.
+        last_workout_duration = None
+        days_since_last_workout = None
+
+        if latest_session:
+            start = latest_session.get(
+                "datetime_start"
+            )
+            end = latest_session.get(
+                "datetime_end"
+            )
+
+            if start and end:
+                try:
+                    start_dt = datetime.fromisoformat(
+                        start.replace(
+                            "Z",
+                            "+00:00",
+                        )
+                    )
+
+                    end_dt = datetime.fromisoformat(
+                        end.replace(
+                            "Z",
+                            "+00:00",
+                        )
+                    )
+
+                    last_workout_duration = round(
+                        (
+                                end_dt - start_dt
+                        ).total_seconds()
+                        / 60,
+                        1,
+                    )
+
+                except ValueError:
+                    _LOGGER.warning(
+                        "Invalid workout session dates: %s - %s",
+                        start,
+                        end,
+                    )
+
+            if start:
+                try:
+                    workout_dt = datetime.fromisoformat(
+                        start.replace(
+                            "Z",
+                            "+00:00",
+                        )
+                    )
+
+                    now = datetime.now().astimezone()
+
+                    days_since_last_workout = (
+                            now.date()
+                            - workout_dt.date()
+                    ).days
+
+                except ValueError:
+                    _LOGGER.warning(
+                        "Invalid workout session date: %s",
+                        start,
+                    )
 
         # Find the currently active routine.
         active_routine = None
 
         for routine in routines.get(
-            "results",
-            [],
+                "results",
+                [],
         ):
             if routine.get(
-                "is_template",
-                False,
+                    "is_template",
+                    False,
             ):
                 continue
 
             if not routine.get(
-                "is_public",
-                False,
+                    "is_public",
+                    False,
             ):
                 active_routine = routine
                 break
@@ -106,6 +168,21 @@ class WgerDataUpdateCoordinator(
                 await self.api.workouts.get_repetitions_this_week(
                     routine_id
                 )
+            )
+
+            _LOGGER.debug(
+                "Active Wger routine: %s",
+                active_routine,
+            )
+
+            _LOGGER.debug(
+                "Current week routine stats: %s",
+                routine_stats,
+            )
+
+            _LOGGER.debug(
+                "Current week repetitions: %s",
+                weekly_repetitions,
             )
 
         return {
@@ -159,7 +236,7 @@ class WgerDataUpdateCoordinator(
 
     @property
     def last_workout_duration(
-        self,
+            self,
     ) -> float | None:
         """Return the duration of the latest workout."""
 
@@ -172,7 +249,7 @@ class WgerDataUpdateCoordinator(
 
     @property
     def days_since_last_workout(
-        self,
+            self,
     ) -> int | None:
         """Return the number of days since the latest workout."""
 
