@@ -40,12 +40,20 @@ class WgerWorkoutCard extends HTMLElement {
       return;
     }
 
-    const link = document.createElement("link");
+    const themeLink = document.createElement("link");
 
-    link.rel = "stylesheet";
-    link.href = "/wger/frontend/wger-workout-card.css";
+    themeLink.rel = "stylesheet";
+    themeLink.href =
+      "/wger/frontend/wger-theme.css";
 
-    this.shadowRoot.appendChild(link);
+    const cardLink = document.createElement("link");
+
+    cardLink.rel = "stylesheet";
+    cardLink.href =
+      "/wger/frontend/wger-workout-card.css";
+
+    this.shadowRoot.appendChild(themeLink);
+    this.shadowRoot.appendChild(cardLink);
 
     this._cssLoaded = true;
   }
@@ -125,6 +133,11 @@ class WgerWorkoutCard extends HTMLElement {
       this.shadowRoot.innerHTML = `
         <link
           rel="stylesheet"
+          href="/wger/frontend/wger-theme.css"
+        >
+
+        <link
+          rel="stylesheet"
           href="/wger/frontend/wger-workout-card.css"
         >
 
@@ -180,6 +193,11 @@ class WgerWorkoutCard extends HTMLElement {
       "Entrenamiento";
 
     this.shadowRoot.innerHTML = `
+      <link
+        rel="stylesheet"
+        href="/wger/frontend/wger-theme.css"
+      >
+
       <link
         rel="stylesheet"
         href="/wger/frontend/wger-workout-card.css"

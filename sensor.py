@@ -51,6 +51,11 @@ SENSORS: tuple[
         icon="mdi:history",
     ),
     WgerSensorEntityDescription(
+        key="workout_progress",
+        name="Workout Progress",
+        icon="mdi:chart-line",
+    ),
+    WgerSensorEntityDescription(
         key="last_workout_duration",
         name="Last Workout Duration",
         native_unit_of_measurement="min",
@@ -218,6 +223,13 @@ class WgerSensor(
                 or "Last Workout"
             )
 
+        if key == "workout_progress":
+            progress = (
+                self.coordinator.workout_progress
+            )
+
+            return len(progress)
+
         if key == "last_workout_duration":
             return (
                 self.coordinator.last_workout_duration
@@ -273,9 +285,7 @@ class WgerSensor(
             )
 
         if key == "todays_sets":
-            return (
-                self.coordinator.todays_sets
-            )
+            return self.coordinator.todays_sets
 
         if key == "todays_repetitions":
             return (
@@ -367,6 +377,18 @@ class WgerSensor(
                 ),
                 "muscle_distribution_note": workout.get(
                     "muscle_distribution_note"
+                ),
+            }
+
+        if key == "workout_progress":
+            progress = (
+                self.coordinator.workout_progress
+            )
+
+            return {
+                "workouts": progress,
+                "total_workouts": len(
+                    progress
                 ),
             }
 

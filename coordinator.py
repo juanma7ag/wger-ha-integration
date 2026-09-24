@@ -53,6 +53,7 @@ class WgerDataUpdateCoordinator(
             trainings_this_week,
             current_weight,
             last_workout,
+            workout_progress,
         ) = await asyncio.gather(
             self.api.profile.get_profile(),
             self.api.routines.get_routines(),
@@ -66,6 +67,7 @@ class WgerDataUpdateCoordinator(
             self.api.workouts.get_trainings_this_week(),
             self.api.measurements.get_current_weight(),
             self.api.workouts.get_last_workout_analysis(),
+            self.api.workouts.get_workout_progress(),
         )
 
         # Calculate workout metrics from the already
@@ -284,6 +286,116 @@ class WgerDataUpdateCoordinator(
                 except Exception as err:
                     _LOGGER.warning(
                         "Unable to resolve last workout sequence "
+                        "for routine %s: %s",
+                        routine_id,
+                        err,
+                    )
+
+        # Enrich workout progress with routine and
+        # workout sequence information.
+        if workout_progress:
+            workout_progress = deepcopy(
+                workout_progress
+            )
+
+            routine_sequences = {}
+
+            for progress_entry in workout_progress:
+                routine_id = progress_entry.get(
+                    "routine_id"
+                )
+
+                workout_date = progress_entry.get(
+                    "date"
+                )
+
+                # Resolve the routine name from the routines
+                # already fetched by the coordinator.
+                if routine_id is not None:
+                    for routine in routines.get(
+                        "results",
+                        [],
+                    ):
+                        if routine.get(
+                            "id"
+                        ) == routine_id:
+                            progress_entry[
+                                "routine_name"
+                            ] = routine.get(
+                                "name"
+                            )
+                            break
+
+                # Resolve the workout/day name and iteration
+                # from the routine date sequence.
+                if (
+                    routine_id is None
+                    or not workout_date
+                ):
+                    continue
+
+                try:
+                    if routine_id not in routine_sequences:
+                        sequence = (
+                            await self.api.routines
+                            .get_routine_date_sequence_display(
+                                routine_id
+                            )
+                        )
+
+                        if isinstance(
+                            sequence,
+                            list,
+                        ):
+                            routine_sequences[
+                                routine_id
+                            ] = sequence
+
+                        else:
+                            routine_sequences[
+                                routine_id
+                            ] = sequence.get(
+                                "results",
+                                [],
+                            )
+
+                    sequence_entries = routine_sequences.get(
+                        routine_id,
+                        [],
+                    )
+
+                    for entry in sequence_entries:
+                        if entry.get(
+                            "date"
+                        ) != workout_date:
+                            continue
+
+                        progress_entry[
+                            "iteration"
+                        ] = entry.get(
+                            "iteration"
+                        )
+
+                        day_data = entry.get(
+                            "day",
+                            {}
+                        )
+
+                        if isinstance(
+                            day_data,
+                            dict,
+                        ):
+                            progress_entry[
+                                "workout_name"
+                            ] = day_data.get(
+                                "name"
+                            )
+
+                        break
+
+                except Exception as err:
+                    _LOGGER.warning(
+                        "Unable to resolve workout progress sequence "
                         "for routine %s: %s",
                         routine_id,
                         err,
@@ -584,6 +696,7 @@ class WgerDataUpdateCoordinator(
             "active_routine": active_routine,
             "latest_session": latest_session,
             "last_workout": last_workout,
+            "workout_progress": workout_progress,
             "weights": weights,
             "measurements": measurements,
             "trainings_this_week": trainings_this_week,
@@ -601,6 +714,18 @@ class WgerDataUpdateCoordinator(
             "next_sets": next_sets,
             "next_repetitions": next_repetitions,
         }
+
+    @property
+    def workout_progress(
+        self,
+    ) -> list[dict]:
+        if self.data is None:
+            return []
+
+        return self.data.get(
+            "workout_progress",
+            [],
+        )
 
     @property
     def current_weight(

@@ -54,12 +54,38 @@ class WgerKpiCard extends HTMLElement {
       return;
     }
 
-    const link = document.createElement("link");
+    /* =====================================================
+       GLOBAL THEME
+       ===================================================== */
 
-    link.rel = "stylesheet";
-    link.href = "/wger/frontend/wger-kpi-card.css";
+    const themeLink =
+      document.createElement("link");
 
-    this.shadowRoot.appendChild(link);
+    themeLink.rel = "stylesheet";
+
+    themeLink.href =
+      "/wger/frontend/wger-theme.css";
+
+    this.shadowRoot.appendChild(
+      themeLink
+    );
+
+
+    /* =====================================================
+       CARD CSS
+       ===================================================== */
+
+    const cardLink =
+      document.createElement("link");
+
+    cardLink.rel = "stylesheet";
+
+    cardLink.href =
+      "/wger/frontend/wger-kpi-card.css";
+
+    this.shadowRoot.appendChild(
+      cardLink
+    );
 
     this._cssLoaded = true;
   }
@@ -202,6 +228,11 @@ class WgerKpiCard extends HTMLElement {
       this.shadowRoot.innerHTML = `
         <link
           rel="stylesheet"
+          href="/wger/frontend/wger-theme.css"
+        >
+
+        <link
+          rel="stylesheet"
           href="/wger/frontend/wger-kpi-card.css"
         >
 
@@ -246,6 +277,11 @@ class WgerKpiCard extends HTMLElement {
       );
 
     this.shadowRoot.innerHTML = `
+      <link
+        rel="stylesheet"
+        href="/wger/frontend/wger-theme.css"
+      >
+
       <link
         rel="stylesheet"
         href="/wger/frontend/wger-kpi-card.css"

@@ -1,7 +1,9 @@
 class WgerLastWorkoutCard extends HTMLElement {
   constructor() {
     super();
+
     this.attachShadow({ mode: "open" });
+
     this._config = {};
     this._hass = null;
   }
@@ -30,12 +32,29 @@ class WgerLastWorkoutCard extends HTMLElement {
       return;
     }
 
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href =
+    const themeLink =
+      document.createElement("link");
+
+    themeLink.rel = "stylesheet";
+
+    themeLink.href =
+      "/wger/frontend/wger-theme.css";
+
+    const cardLink =
+      document.createElement("link");
+
+    cardLink.rel = "stylesheet";
+
+    cardLink.href =
       "/wger/frontend/wger-last-workout-card.css";
 
-    this.shadowRoot.appendChild(link);
+    this.shadowRoot.appendChild(
+      themeLink
+    );
+
+    this.shadowRoot.appendChild(
+      cardLink
+    );
   }
 
   _getEntity() {
@@ -49,19 +68,40 @@ class WgerLastWorkoutCard extends HTMLElement {
   }
 
   _escapeHtml(value) {
-    if (value === null || value === undefined) {
+    if (
+      value === null ||
+      value === undefined
+    ) {
       return "";
     }
 
     return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      )
+      .replace(
+        /'/g,
+        "&#039;"
+      );
   }
 
-  _formatNumber(value, decimals = 0) {
+  _formatNumber(
+    value,
+    decimals = 0
+  ) {
     if (
       value === null ||
       value === undefined ||
@@ -70,19 +110,31 @@ class WgerLastWorkoutCard extends HTMLElement {
       return "—";
     }
 
-    const number = Number(value);
+    const number =
+      Number(value);
 
-    if (!Number.isFinite(number)) {
+    if (
+      !Number.isFinite(number)
+    ) {
       return "—";
     }
 
-    return number.toLocaleString("es-ES", {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
+    return number.toLocaleString(
+      "es-ES",
+      {
+        minimumFractionDigits:
+          decimals,
+
+        maximumFractionDigits:
+          decimals,
+      }
+    );
   }
 
-  _formatDecimal(value, decimals = 1) {
+  _formatDecimal(
+    value,
+    decimals = 1
+  ) {
     if (
       value === null ||
       value === undefined ||
@@ -91,16 +143,25 @@ class WgerLastWorkoutCard extends HTMLElement {
       return "—";
     }
 
-    const number = Number(value);
+    const number =
+      Number(value);
 
-    if (!Number.isFinite(number)) {
+    if (
+      !Number.isFinite(number)
+    ) {
       return "—";
     }
 
-    return number.toLocaleString("es-ES", {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    });
+    return number.toLocaleString(
+      "es-ES",
+      {
+        minimumFractionDigits:
+          decimals,
+
+        maximumFractionDigits:
+          decimals,
+      }
+    );
   }
 
   _formatDate(value) {
@@ -108,17 +169,25 @@ class WgerLastWorkoutCard extends HTMLElement {
       return "—";
     }
 
-    const date = new Date(value);
+    const date =
+      new Date(value);
 
-    if (Number.isNaN(date.getTime())) {
+    if (
+      Number.isNaN(
+        date.getTime()
+      )
+    ) {
       return value;
     }
 
-    return date.toLocaleDateString("es-ES", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+    return date.toLocaleDateString(
+      "es-ES",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }
+    );
   }
 
   _formatRir(value) {
@@ -130,16 +199,22 @@ class WgerLastWorkoutCard extends HTMLElement {
       return "—";
     }
 
-    const number = Number(value);
+    const number =
+      Number(value);
 
-    if (!Number.isFinite(number)) {
+    if (
+      !Number.isFinite(number)
+    ) {
       return "—";
     }
 
-    return number.toLocaleString("es-ES", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    });
+    return number.toLocaleString(
+      "es-ES",
+      {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }
+    );
   }
 
   _formatWeight(value) {
@@ -151,15 +226,21 @@ class WgerLastWorkoutCard extends HTMLElement {
       return "—";
     }
 
-    const number = Number(value);
+    const number =
+      Number(value);
 
-    if (!Number.isFinite(number)) {
+    if (
+      !Number.isFinite(number)
+    ) {
       return "—";
     }
 
-    return `${number.toLocaleString("es-ES", {
-      maximumFractionDigits: 2,
-    })} kg`;
+    return `${number.toLocaleString(
+      "es-ES",
+      {
+        maximumFractionDigits: 2,
+      }
+    )} kg`;
   }
 
   _formatVolume(value) {
@@ -171,15 +252,21 @@ class WgerLastWorkoutCard extends HTMLElement {
       return "—";
     }
 
-    const number = Number(value);
+    const number =
+      Number(value);
 
-    if (!Number.isFinite(number)) {
+    if (
+      !Number.isFinite(number)
+    ) {
       return "—";
     }
 
-    return `${number.toLocaleString("es-ES", {
-      maximumFractionDigits: 1,
-    })} kg`;
+    return `${number.toLocaleString(
+      "es-ES",
+      {
+        maximumFractionDigits: 1,
+      }
+    )} kg`;
   }
 
   _formatDuration(value) {
@@ -191,13 +278,18 @@ class WgerLastWorkoutCard extends HTMLElement {
       return "—";
     }
 
-    const number = Number(value);
+    const number =
+      Number(value);
 
-    if (!Number.isFinite(number)) {
+    if (
+      !Number.isFinite(number)
+    ) {
       return "—";
     }
 
-    return `${Math.round(number)} min`;
+    return `${Math.round(
+      number
+    )} min`;
   }
 
   _getMuscleColor(index) {
@@ -212,46 +304,70 @@ class WgerLastWorkoutCard extends HTMLElement {
       "#fb7185",
     ];
 
-    return colors[index % colors.length];
+    return colors[
+      index % colors.length
+    ];
   }
 
-  _buildMuscleGradient(muscles) {
-    if (!muscles || muscles.length === 0) {
+  _buildMuscleGradient(
+    muscles
+  ) {
+    if (
+      !muscles ||
+      muscles.length === 0
+    ) {
       return "conic-gradient(#1e293b 0deg 360deg)";
     }
 
     let currentAngle = 0;
 
-    const segments = muscles
-      .map((muscle, index) => {
-        const percentage = Number(
-          muscle.percentage
-        );
+    const segments =
+      muscles
+        .map(
+          (
+            muscle,
+            index
+          ) => {
+            const percentage =
+              Number(
+                muscle.percentage
+              );
 
-        if (
-          !Number.isFinite(percentage) ||
-          percentage <= 0
-        ) {
-          return null;
-        }
+            if (
+              !Number.isFinite(
+                percentage
+              ) ||
+              percentage <= 0
+            ) {
+              return null;
+            }
 
-        const start = currentAngle;
+            const start =
+              currentAngle;
 
-        currentAngle +=
-          (percentage / 100) * 360;
+            currentAngle +=
+              (percentage / 100) *
+              360;
 
-        const color =
-          this._getMuscleColor(index);
+            const color =
+              this._getMuscleColor(
+                index
+              );
 
-        return `${color} ${start}deg ${currentAngle}deg`;
-      })
-      .filter(Boolean);
+            return `${color} ${start}deg ${currentAngle}deg`;
+          }
+        )
+        .filter(Boolean);
 
-    if (segments.length === 0) {
+    if (
+      segments.length === 0
+    ) {
       return "conic-gradient(#1e293b 0deg 360deg)";
     }
 
-    return `conic-gradient(${segments.join(", ")})`;
+    return `conic-gradient(${segments.join(
+      ", "
+    )})`;
   }
 
   _renderKpi(
@@ -261,18 +377,27 @@ class WgerLastWorkoutCard extends HTMLElement {
   ) {
     return `
       <div class="kpi ${modifier}">
+
         <div class="kpi-value">
-          ${this._escapeHtml(value)}
+          ${this._escapeHtml(
+            value
+          )}
         </div>
 
         <div class="kpi-label">
-          ${this._escapeHtml(label)}
+          ${this._escapeHtml(
+            label
+          )}
         </div>
+
       </div>
     `;
   }
 
-  _renderExercise(exercise, index) {
+  _renderExercise(
+    exercise,
+    index
+  ) {
     const name =
       exercise.name ||
       `Ejercicio ${exercise.exercise_id}`;
@@ -282,137 +407,171 @@ class WgerLastWorkoutCard extends HTMLElement {
       ...(exercise.muscle_names_secondary || []),
     ];
 
-    const muscleHtml = muscles.length
-      ? muscles
-          .map(
-            (muscle) => `
-              <span class="muscle-tag">
-                ${this._escapeHtml(muscle)}
-              </span>
-            `
-          )
-          .join("")
-      : `
-          <span class="muscle-tag muted">
-            Sin datos musculares
-          </span>
-        `;
-
-    const image = exercise.image;
-
-    const imageHtml = image
-      ? `
-        <div class="exercise-image">
-          <img
-            src="${this._escapeHtml(image)}"
-            alt="${this._escapeHtml(name)}"
-            loading="lazy"
-          />
-        </div>
-      `
-      : `
-        <div class="exercise-image no-image">
-          <span>W</span>
-        </div>
-      `;
-
-    const sets = exercise.sets || [];
-
-    const setRows = sets
-      .map((set, setIndex) => {
-        const reps = set.repetitions;
-        const target =
-          set.repetitions_target;
-
-        const repsHtml =
-          reps !== null &&
-          reps !== undefined
-            ? `
-                <span class="actual-value">
+    const muscleHtml =
+      muscles.length
+        ? muscles
+            .map(
+              (muscle) => `
+                <span class="muscle-tag">
                   ${this._escapeHtml(
-                    this._formatNumber(reps)
+                    muscle
                   )}
                 </span>
-                ${
-                  target !== null &&
-                  target !== undefined
-                    ? `
-                      <span class="target-value">
-                        / ${this._escapeHtml(
-                          this._formatNumber(
-                            target
-                          )
-                        )}
-                      </span>
-                    `
-                    : ""
-                }
               `
-            : "—";
-
-        const rir =
-          set.rir !== null &&
-          set.rir !== undefined
-            ? this._formatRir(set.rir)
-            : "—";
-
-        const rirTarget =
-          set.rir_target !== null &&
-          set.rir_target !== undefined
-            ? this._formatRir(
-                set.rir_target
-              )
-            : null;
-
-        const rirHtml =
-          rir !== "—"
-            ? `
-                <span class="rir-value">
-                  ${this._escapeHtml(rir)}
-                </span>
-                ${
-                  rirTarget !== null
-                    ? `
-                      <span class="target-value">
-                        / ${this._escapeHtml(
-                          rirTarget
-                        )}
-                      </span>
-                    `
-                    : ""
-                }
-              `
-            : "—";
-
-        const weight =
-          set.weight !== null &&
-          set.weight !== undefined
-            ? this._formatWeight(
-                set.weight
-              )
-            : "—";
-
-        return `
-            <div class="set-row">
-              <div class="set-number">
-                ${setIndex + 1}
-              </div>
-
-              <div class="set-reps">
-                ${repsHtml}
-              </div>
-
-              <div class="set-weight">
-                ${this._escapeHtml(weight)}
-              </div>
-
-              <div class="set-rir">
-                ${rirHtml}
-              </div>
-            </div>
+            )
+            .join("")
+        : `
+            <span class="muscle-tag muted">
+              Sin datos musculares
+            </span>
           `;
-      })
-      .join("");
+
+    const image =
+      exercise.image;
+
+    const imageHtml =
+      image
+        ? `
+          <div class="exercise-image">
+
+            <img
+              src="${this._escapeHtml(
+                image
+              )}"
+              alt="${this._escapeHtml(
+                name
+              )}"
+              loading="lazy"
+            />
+
+          </div>
+        `
+        : `
+          <div class="exercise-image no-image">
+            <span>W</span>
+          </div>
+        `;
+
+    const sets =
+      exercise.sets || [];
+
+    const setRows =
+      sets
+        .map(
+          (
+            set,
+            setIndex
+          ) => {
+            const reps =
+              set.repetitions;
+
+            const target =
+              set.repetitions_target;
+
+            const repsHtml =
+              reps !== null &&
+              reps !== undefined
+                ? `
+                    <span class="actual-value">
+                      ${this._escapeHtml(
+                        this._formatNumber(
+                          reps
+                        )
+                      )}
+                    </span>
+
+                    ${
+                      target !== null &&
+                      target !== undefined
+                        ? `
+                          <span class="target-value">
+                            /
+                            ${this._escapeHtml(
+                              this._formatNumber(
+                                target
+                              )
+                            )}
+                          </span>
+                        `
+                        : ""
+                    }
+                  `
+                : "—";
+
+            const rir =
+              set.rir !== null &&
+              set.rir !== undefined
+                ? this._formatRir(
+                    set.rir
+                  )
+                : "—";
+
+            const rirTarget =
+              set.rir_target !== null &&
+              set.rir_target !== undefined
+                ? this._formatRir(
+                    set.rir_target
+                  )
+                : null;
+
+            const rirHtml =
+              rir !== "—"
+                ? `
+                    <span class="rir-value">
+                      ${this._escapeHtml(
+                        rir
+                      )}
+                    </span>
+
+                    ${
+                      rirTarget !== null
+                        ? `
+                          <span class="target-value">
+                            /
+                            ${this._escapeHtml(
+                              rirTarget
+                            )}
+                          </span>
+                        `
+                        : ""
+                    }
+                  `
+                : "—";
+
+            const weight =
+              set.weight !== null &&
+              set.weight !== undefined
+                ? this._formatWeight(
+                    set.weight
+                  )
+                : "—";
+
+            return `
+              <div class="set-row">
+
+                <div class="set-number">
+                  ${setIndex + 1}
+                </div>
+
+                <div class="set-reps">
+                  ${repsHtml}
+                </div>
+
+                <div class="set-weight">
+                  ${this._escapeHtml(
+                    weight
+                  )}
+                </div>
+
+                <div class="set-rir">
+                  ${rirHtml}
+                </div>
+
+              </div>
+            `;
+          }
+        )
+        .join("");
 
     return `
       <article class="exercise-card">
@@ -424,7 +583,9 @@ class WgerLastWorkoutCard extends HTMLElement {
           <div class="exercise-heading">
 
             <div class="exercise-number">
-              ${String(index + 1).padStart(
+              ${String(
+                index + 1
+              ).padStart(
                 2,
                 "0"
               )}
@@ -433,7 +594,9 @@ class WgerLastWorkoutCard extends HTMLElement {
             <div class="exercise-title-block">
 
               <h3>
-                ${this._escapeHtml(name)}
+                ${this._escapeHtml(
+                  name
+                )}
               </h3>
 
               <div class="muscle-tags">
@@ -449,10 +612,23 @@ class WgerLastWorkoutCard extends HTMLElement {
         <div class="sets-table">
 
           <div class="set-header">
-            <div>SET</div>
-            <div>REPS</div>
-            <div>PESO</div>
-            <div>RIR</div>
+
+            <div>
+              SET
+            </div>
+
+            <div>
+              REPS
+            </div>
+
+            <div>
+              PESO
+            </div>
+
+            <div>
+              RIR
+            </div>
+
           </div>
 
           ${setRows}
@@ -462,7 +638,11 @@ class WgerLastWorkoutCard extends HTMLElement {
         <div class="exercise-summary">
 
           <div class="summary-item">
-            <span>REPS</span>
+
+            <span>
+              REPS
+            </span>
+
             <strong>
               ${this._escapeHtml(
                 this._formatNumber(
@@ -470,10 +650,15 @@ class WgerLastWorkoutCard extends HTMLElement {
                 )
               )}
             </strong>
+
           </div>
 
           <div class="summary-item">
-            <span>VOLUMEN</span>
+
+            <span>
+              VOLUMEN
+            </span>
+
             <strong>
               ${this._escapeHtml(
                 this._formatVolume(
@@ -481,10 +666,15 @@ class WgerLastWorkoutCard extends HTMLElement {
                 )
               )}
             </strong>
+
           </div>
 
           <div class="summary-item">
-            <span>MÁX.</span>
+
+            <span>
+              MÁX.
+            </span>
+
             <strong>
               ${this._escapeHtml(
                 this._formatWeight(
@@ -492,10 +682,15 @@ class WgerLastWorkoutCard extends HTMLElement {
                 )
               )}
             </strong>
+
           </div>
 
           <div class="summary-item">
-            <span>RIR MEDIO</span>
+
+            <span>
+              RIR MEDIO
+            </span>
+
             <strong>
               ${this._escapeHtml(
                 this._formatRir(
@@ -503,6 +698,7 @@ class WgerLastWorkoutCard extends HTMLElement {
                 )
               )}
             </strong>
+
           </div>
 
         </div>
@@ -511,15 +707,20 @@ class WgerLastWorkoutCard extends HTMLElement {
     `;
   }
 
-  _renderMuscleDistribution(muscles) {
+  _renderMuscleDistribution(
+    muscles
+  ) {
     if (
-      !Array.isArray(muscles) ||
+      !Array.isArray(
+        muscles
+      ) ||
       muscles.length === 0
     ) {
       return `
         <section class="muscle-section">
 
           <div class="section-heading">
+
             <span class="section-kicker">
               MUSCLE ANALYTICS
             </span>
@@ -527,6 +728,7 @@ class WgerLastWorkoutCard extends HTMLElement {
             <h2>
               Distribución muscular
             </h2>
+
           </div>
 
           <div class="empty-muscles">
@@ -543,37 +745,41 @@ class WgerLastWorkoutCard extends HTMLElement {
         muscles
       );
 
-    const legend = muscles
-      .map(
-        (muscle, index) => `
-          <div class="muscle-legend-row">
+    const legend =
+      muscles
+        .map(
+          (
+            muscle,
+            index
+          ) => `
+            <div class="muscle-legend-row">
 
-            <div
-              class="legend-dot"
-              style="background:${this._getMuscleColor(
-                index
-              )}"
-            ></div>
+              <div
+                class="legend-dot"
+                style="background:${this._getMuscleColor(
+                  index
+                )}"
+              ></div>
 
-            <div class="legend-name">
-              ${this._escapeHtml(
-                muscle.muscle
-              )}
+              <div class="legend-name">
+                ${this._escapeHtml(
+                  muscle.muscle
+                )}
+              </div>
+
+              <div class="legend-percentage">
+                ${this._escapeHtml(
+                  this._formatDecimal(
+                    muscle.percentage,
+                    1
+                  )
+                )}%
+              </div>
+
             </div>
-
-            <div class="legend-percentage">
-              ${this._escapeHtml(
-                this._formatDecimal(
-                  muscle.percentage,
-                  1
-                )
-              )}%
-            </div>
-
-          </div>
-        `
-      )
-      .join("");
+          `
+        )
+        .join("");
 
     return `
       <section class="muscle-section">
@@ -598,6 +804,7 @@ class WgerLastWorkoutCard extends HTMLElement {
               class="muscle-donut"
               style="background:${gradient}"
             >
+
               <div class="donut-center">
 
                 <strong>
@@ -609,6 +816,7 @@ class WgerLastWorkoutCard extends HTMLElement {
                 </span>
 
               </div>
+
             </div>
 
           </div>
@@ -632,19 +840,43 @@ class WgerLastWorkoutCard extends HTMLElement {
       return;
     }
 
-    const entity = this._getEntity();
+    const entity =
+      this._getEntity();
+
+    /*
+     * IMPORTANT:
+     *
+     * Every render replaces
+     * shadowRoot.innerHTML.
+     *
+     * Therefore the stylesheet
+     * links must also exist inside
+     * the HTML generated on every
+     * render.
+     */
+
+    const styleLinks = `
+      <link
+        rel="stylesheet"
+        href="/wger/frontend/wger-theme.css"
+      />
+
+      <link
+        rel="stylesheet"
+        href="/wger/frontend/wger-last-workout-card.css"
+      />
+    `;
 
     if (!entity) {
       this.shadowRoot.innerHTML = `
-        <link
-          rel="stylesheet"
-          href="/wger/frontend/wger-last-workout-card.css"
-        />
+        ${styleLinks}
 
         <ha-card class="card">
+
           <div class="loading">
             Esperando datos de Wger...
           </div>
+
         </ha-card>
       `;
 
@@ -663,13 +895,15 @@ class WgerLastWorkoutCard extends HTMLElement {
       "Wger Fitness";
 
     const date =
-      attributes.date || null;
+      attributes.date ||
+      null;
 
     const duration =
       attributes.duration;
 
     const totals =
-      attributes.totals || {};
+      attributes.totals ||
+      {};
 
     const exercises =
       Array.isArray(
@@ -689,13 +923,18 @@ class WgerLastWorkoutCard extends HTMLElement {
       attributes.average_rir;
 
     const dateText =
-      this._formatDate(date);
+      this._formatDate(
+        date
+      );
 
     const exerciseHtml =
       exercises.length
         ? exercises
             .map(
-              (exercise, index) =>
+              (
+                exercise,
+                index
+              ) =>
                 this._renderExercise(
                   exercise,
                   index
@@ -710,10 +949,7 @@ class WgerLastWorkoutCard extends HTMLElement {
         `;
 
     this.shadowRoot.innerHTML = `
-      <link
-        rel="stylesheet"
-        href="/wger/frontend/wger-last-workout-card.css"
-      />
+      ${styleLinks}
 
       <ha-card class="card">
 
@@ -726,14 +962,19 @@ class WgerLastWorkoutCard extends HTMLElement {
             <div class="hero-top">
 
               <div class="hero-label">
+
                 <span class="pulse"></span>
+
                 LAST WORKOUT
+
               </div>
 
               <div class="hero-date">
+
                 ${this._escapeHtml(
                   dateText
                 )}
+
               </div>
 
             </div>
@@ -743,15 +984,19 @@ class WgerLastWorkoutCard extends HTMLElement {
               <div>
 
                 <h1>
+
                   ${this._escapeHtml(
                     workoutName
                   )}
+
                 </h1>
 
                 <div class="routine">
+
                   ${this._escapeHtml(
                     routineName
                   )}
+
                 </div>
 
               </div>
@@ -763,11 +1008,13 @@ class WgerLastWorkoutCard extends HTMLElement {
                 </span>
 
                 <span>
+
                   ${this._escapeHtml(
                     this._formatDuration(
                       duration
                     )
                   )}
+
                 </span>
 
               </div>
@@ -835,18 +1082,22 @@ class WgerLastWorkoutCard extends HTMLElement {
               </span>
 
               <strong>
+
                 ${this._escapeHtml(
                   this._formatRir(
                     averageRir
                   )
                 )}
+
               </strong>
 
             </div>
 
             <div class="performance-description">
+
               Reserva media de repeticiones
               durante la sesión
+
             </div>
 
           </div>
@@ -868,7 +1119,9 @@ class WgerLastWorkoutCard extends HTMLElement {
             </div>
 
             <div class="exercises-list">
+
               ${exerciseHtml}
+
             </div>
 
           </section>

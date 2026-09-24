@@ -1,44 +1,3 @@
-:host {
-  display: block;
-
-  --wger-bg: #07111f;
-  --wger-bg-light: #0b1728;
-
-  --wger-panel: #0d1b2d;
-  --wger-panel-light: #112238;
-
-  --wger-border: rgba(148, 163, 184, 0.12);
-  --wger-border-strong: rgba(148, 163, 184, 0.22);
-
-  --wger-text: #f8fafc;
-  --wger-muted: #94a3b8;
-  --wger-dim: #64748b;
-
-  --wger-accent: #38bdf8;
-  --wger-accent-2: #818cf8;
-
-  --wger-radius: 18px;
-
-  font-family:
-    Inter,
-    Roboto,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-}
-
-
-/* =========================================================
-   RESET
-   ========================================================= */
-
-* {
-  box-sizing: border-box;
-}
-
-
 /* =========================================================
    MAIN CARD
    ========================================================= */
@@ -65,13 +24,16 @@
     ),
     var(--wger-bg);
 
-  border: 1px solid var(--wger-border);
+  border: 1px solid
+    var(--wger-border);
 
   border-radius: 24px;
 
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    0 20px 50px
+      rgba(0, 0, 0, 0.25),
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.025);
 }
 
 
@@ -144,7 +106,9 @@
 .header-badge {
   flex-shrink: 0;
 
-  padding: 8px 12px;
+  padding:
+    8px
+    12px;
 
   color: var(--wger-accent);
 
@@ -204,14 +168,16 @@
 
   min-height: 76px;
 
-  padding: 13px 15px;
+  padding:
+    13px
+    15px;
 
   overflow: hidden;
 
   background:
     linear-gradient(
       145deg,
-      rgba(17, 34, 56, 0.95),
+      var(--wger-panel-light),
       rgba(8, 20, 34, 0.95)
     );
 
@@ -278,6 +244,8 @@
   font-weight: 900;
 
   letter-spacing: -0.03em;
+
+  color: var(--wger-text);
 }
 
 
@@ -343,6 +311,8 @@
   font-weight: 850;
 
   letter-spacing: -0.02em;
+
+  color: var(--wger-text);
 }
 
 
@@ -385,7 +355,8 @@
   border: 1px solid
     var(--wger-border);
 
-  border-radius: var(--wger-radius);
+  border-radius:
+    var(--wger-radius);
 
   transition:
     border-color 0.2s ease,
@@ -455,7 +426,7 @@
 
   overflow: hidden;
 
-  color: #f8fafc;
+  color: var(--wger-text);
 
   font-size: 15px;
 
@@ -506,7 +477,7 @@
 
 
 .muscle-tag {
-  color: #bae6fd;
+  color: var(--wger-cyan);
 
   background:
     rgba(56, 189, 248, 0.09);
@@ -518,7 +489,7 @@
 
 
 .equipment-tag {
-  color: #c4b5fd;
+  color: var(--wger-indigo);
 
   background:
     rgba(129, 140, 248, 0.08);
@@ -562,8 +533,8 @@
   background:
     linear-gradient(
       135deg,
-      #0f243a,
-      #08111d
+      var(--wger-panel-light),
+      var(--wger-bg)
     );
 }
 
@@ -686,7 +657,7 @@
 .planning-row {
   min-height: 42px;
 
-  color: #cbd5e1;
+  color: var(--wger-text-soft);
 
   font-size: 12px;
 
@@ -717,7 +688,7 @@
 
 
 .planning-series {
-  color: #cbd5e1;
+  color: var(--wger-text-soft);
 
   font-weight: 700;
 }
@@ -751,7 +722,7 @@
 
 
 .planning-reps {
-  color: #f8fafc;
+  color: var(--wger-text);
 
   font-size: 14px;
 

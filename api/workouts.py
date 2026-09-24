@@ -5,13 +5,13 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
+from .client import WgerApiClient
 from ..const import (
     DEFAULT_LOG_LIMIT,
     DEFAULT_PAGE_LIMIT,
     ENDPOINT_WORKOUT_LOGS,
     ENDPOINT_WORKOUT_SESSIONS,
 )
-from .client import WgerApiClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,16 +20,16 @@ class WgerWorkoutsApi:
     """API methods related to workouts and workout sessions."""
 
     def __init__(
-        self,
-        client: WgerApiClient,
+            self,
+            client: WgerApiClient,
     ) -> None:
         """Initialize the workouts API."""
 
         self._client = client
 
     async def get_workout_sessions(
-        self,
-        limit: int = DEFAULT_PAGE_LIMIT,
+            self,
+            limit: int = DEFAULT_PAGE_LIMIT,
     ) -> dict:
         """Get workout sessions."""
 
@@ -63,7 +63,7 @@ class WgerWorkoutsApi:
 
         sessions = data.get(
             "results",
-            [],
+            []
         )
 
         today = datetime.now().astimezone()
@@ -97,8 +97,8 @@ class WgerWorkoutsApi:
                 ) = session_date.isocalendar()
 
                 if (
-                    session_year == current_year
-                    and session_week == current_week
+                        session_year == current_year
+                        and session_week == current_week
                 ):
                     count += 1
 
@@ -111,7 +111,7 @@ class WgerWorkoutsApi:
         return count
 
     async def get_last_workout_duration(
-        self,
+            self,
     ) -> float | None:
         """Return duration of the latest workout in minutes."""
 
@@ -147,8 +147,8 @@ class WgerWorkoutsApi:
             )
 
             duration = (
-                end_dt - start_dt
-            ).total_seconds() / 60
+                               end_dt - start_dt
+                       ).total_seconds() / 60
 
             return round(
                 duration,
@@ -165,7 +165,7 @@ class WgerWorkoutsApi:
             return None
 
     async def get_days_since_last_workout(
-        self,
+            self,
     ) -> int | None:
         """Return number of days since the latest workout."""
 
@@ -192,8 +192,8 @@ class WgerWorkoutsApi:
             now = datetime.now().astimezone()
 
             return (
-                now.date()
-                - workout_dt.date()
+                    now.date()
+                    - workout_dt.date()
             ).days
 
         except ValueError:
@@ -205,8 +205,8 @@ class WgerWorkoutsApi:
             return None
 
     async def get_workout_logs(
-        self,
-        limit: int = DEFAULT_LOG_LIMIT,
+            self,
+            limit: int = DEFAULT_LOG_LIMIT,
     ) -> dict:
         """Get workout logs."""
 
@@ -215,9 +215,192 @@ class WgerWorkoutsApi:
             f"?limit={limit}"
         )
 
+    async def get_workout_progress(
+            self,
+            limit: int = DEFAULT_LOG_LIMIT,
+    ) -> list[dict]:
+        """Return aggregated workout progress by session."""
+
+        sessions_data = await self.get_workout_sessions(
+            limit=250
+        )
+
+        sessions = sessions_data.get(
+            "results",
+            [],
+        )
+
+        logs_data = await self.get_workout_logs(
+            limit=limit
+        )
+
+        logs = logs_data.get(
+            "results",
+            [],
+        )
+
+        logs_by_session = {}
+
+        for log in logs:
+            session_id = log.get(
+                "session"
+            )
+
+            if not session_id:
+                continue
+
+            if session_id not in logs_by_session:
+                logs_by_session[session_id] = []
+
+            logs_by_session[session_id].append(
+                log
+            )
+
+        progress = []
+
+        for session in sessions:
+            session_id = session.get(
+                "id"
+            )
+
+            if not session_id:
+                continue
+
+            session_logs = logs_by_session.get(
+                session_id,
+                [],
+            )
+
+            if not session_logs:
+                continue
+
+            total_sets = len(session_logs)
+            total_repetitions = 0.0
+            total_volume = 0.0
+            rir_values = []
+            exercise_ids = set()
+
+            for log in session_logs:
+                exercise_id = log.get(
+                    "exercise"
+                )
+
+                if exercise_id is not None:
+                    exercise_ids.add(
+                        exercise_id
+                    )
+
+                repetitions = log.get(
+                    "repetitions"
+                )
+
+                weight = log.get(
+                    "weight"
+                )
+
+                rir = log.get(
+                    "rir"
+                )
+
+                try:
+                    if repetitions is not None:
+                        total_repetitions += float(
+                            repetitions
+                        )
+                except (
+                        TypeError,
+                        ValueError,
+                ):
+                    pass
+
+                try:
+                    if (
+                            weight is not None
+                            and repetitions is not None
+                    ):
+                        total_volume += (
+                                float(weight)
+                                * float(repetitions)
+                        )
+                except (
+                        TypeError,
+                        ValueError,
+                ):
+                    pass
+
+                try:
+                    if rir is not None:
+                        rir_values.append(
+                            float(rir)
+                        )
+                except (
+                        TypeError,
+                        ValueError,
+                ):
+                    pass
+
+            start = session.get(
+                "datetime_start"
+            )
+
+            end = session.get(
+                "datetime_end"
+            )
+
+            session_date = self._parse_datetime(
+                start
+            )
+
+            progress.append({
+                "session_id": session_id,
+                "date": (
+                    session_date.date().isoformat()
+                    if session_date
+                    else ""
+                ),
+                "date_start": start,
+                "date_end": end,
+                "iteration": session.get(
+                    "iteration"
+                ),
+                "workout_name": session.get(
+                    "name"
+                ),
+                "routine_id": session.get(
+                    "routine"
+                ),
+                "routine_name": session.get(
+                    "routine_name"
+                ),
+                "total_exercises": len(
+                    exercise_ids
+                ),
+                "total_sets": total_sets,
+                "total_repetitions": round(
+                    total_repetitions,
+                    1,
+                ),
+                "total_volume": round(
+                    total_volume,
+                    1,
+                ),
+                "average_rir": self._calculate_average_rir(
+                    rir_values
+                ),
+            })
+
+        progress.sort(
+            key=lambda item: item.get(
+                "date_start"
+            ) or "",
+            reverse=True,
+        )
+
+        return progress
+
     async def get_repetitions_this_week(
-        self,
-        routine_id: int | None = None,
+            self,
+            routine_id: int | None = None,
     ) -> float:
         """Count repetitions performed during the current ISO week."""
 
@@ -240,8 +423,8 @@ class WgerWorkoutsApi:
 
         for log in logs:
             if (
-                routine_id is not None
-                and log.get("routine") != routine_id
+                    routine_id is not None
+                    and log.get("routine") != routine_id
             ):
                 continue
 
@@ -279,8 +462,8 @@ class WgerWorkoutsApi:
             ) = log_date.isocalendar()
 
             if (
-                log_year != current_year
-                or log_week != current_week
+                    log_year != current_year
+                    or log_week != current_week
             ):
                 continue
 
@@ -299,7 +482,7 @@ class WgerWorkoutsApi:
 
     @staticmethod
     def _parse_datetime(
-        value: str | None,
+            value: str | None,
     ) -> datetime | None:
         """Parse an ISO datetime value."""
 
@@ -318,7 +501,7 @@ class WgerWorkoutsApi:
 
     @staticmethod
     def _calculate_average_rir(
-        values: list,
+            values: list,
     ) -> float | None:
         """Calculate the average RIR from numeric values."""
 
@@ -343,7 +526,7 @@ class WgerWorkoutsApi:
 
     @staticmethod
     def _build_muscle_distribution(
-        exercises: list[dict],
+            exercises: list[dict],
     ) -> list[dict]:
         """Build an estimated muscle volume distribution."""
 
@@ -511,7 +694,7 @@ class WgerWorkoutsApi:
         return distribution
 
     async def get_last_workout_analysis(
-        self,
+            self,
     ) -> dict | None:
         """Return a detailed analysis of the latest workout session."""
 
@@ -641,14 +824,14 @@ class WgerWorkoutsApi:
             )
 
             if not isinstance(
-                primary_muscles,
-                list,
+                    primary_muscles,
+                    list,
             ):
                 primary_muscles = []
 
             if not isinstance(
-                secondary_muscles,
-                list,
+                    secondary_muscles,
+                    list,
             ):
                 secondary_muscles = []
 
@@ -678,23 +861,23 @@ class WgerWorkoutsApi:
                             repetitions
                         )
                 except (
-                    TypeError,
-                    ValueError,
+                        TypeError,
+                        ValueError,
                 ):
                     pass
 
                 try:
                     if (
-                        weight is not None
-                        and repetitions is not None
+                            weight is not None
+                            and repetitions is not None
                     ):
                         total_volume += (
-                            float(weight)
-                            * float(repetitions)
+                                float(weight)
+                                * float(repetitions)
                         )
                 except (
-                    TypeError,
-                    ValueError,
+                        TypeError,
+                        ValueError,
                 ):
                     pass
 
@@ -705,14 +888,14 @@ class WgerWorkoutsApi:
                         )
 
                         if (
-                            max_weight is None
-                            or weight_value > max_weight
+                                max_weight is None
+                                or weight_value > max_weight
                         ):
                             max_weight = weight_value
 
                 except (
-                    TypeError,
-                    ValueError,
+                        TypeError,
+                        ValueError,
                 ):
                     pass
 
@@ -722,13 +905,13 @@ class WgerWorkoutsApi:
                             float(rir)
                         )
                 except (
-                    TypeError,
-                    ValueError,
+                        TypeError,
+                        ValueError,
                 ):
                     pass
 
                 if log.get(
-                    "weight_unit"
+                        "weight_unit"
                 ):
                     weight_unit = log.get(
                         "weight_unit"
@@ -869,13 +1052,13 @@ class WgerWorkoutsApi:
         )
 
         if (
-            latest_session_start
-            and latest_session_end
+                latest_session_start
+                and latest_session_end
         ):
             duration = round(
                 (
-                    latest_session_end
-                    - latest_session_start
+                        latest_session_end
+                        - latest_session_start
                 ).total_seconds()
                 / 60,
                 1,

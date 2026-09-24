@@ -1,200 +1,256 @@
+/* =========================================================
+   WGER LAST WORKOUT CARD
+   ========================================================= */
+
 :host {
-  --wger-bg: #07111f;
-  --wger-panel: #0b1728;
-  --wger-panel-light: #101e32;
-  --wger-border: rgba(148, 163, 184, 0.12);
-
-  --wger-text: #f8fafc;
-  --wger-text-soft: #cbd5e1;
-  --wger-muted: #64748b;
-
-  --wger-cyan: #38bdf8;
-  --wger-indigo: #818cf8;
-  --wger-green: #22c55e;
-  --wger-orange: #f59e0b;
-
   display: block;
+
   width: 100%;
 }
 
-* {
-  box-sizing: border-box;
-}
+
+/* =========================================================
+   MAIN CARD
+   ========================================================= */
 
 .card {
-  overflow: hidden;
+  width: 100%;
+
+  min-height: 100%;
+
+  box-sizing: border-box;
 
   background:
-    radial-gradient(
-      circle at 10% 0%,
-      rgba(56, 189, 248, 0.10),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at 95% 15%,
-      rgba(129, 140, 248, 0.10),
-      transparent 25%
-    ),
-    linear-gradient(
-      145deg,
-      #07111f 0%,
-      #091525 50%,
-      #07111f 100%
-    );
+    var(--wger-card-bg);
 
-  color: var(--wger-text);
+  border:
+    1px solid
+    var(--wger-border);
 
-  border: 1px solid
-    rgba(148, 163, 184, 0.14);
-
-  border-radius: 24px;
+  border-radius:
+    24px;
 
   box-shadow:
-    0 20px 60px
-      rgba(0, 0, 0, 0.32),
+    0 20px 50px
+      rgba(
+        0,
+        0,
+        0,
+        0.32
+      ),
     inset 0 1px 0
-      rgba(255, 255, 255, 0.025);
+      rgba(
+        255,
+        255,
+        255,
+        0.025
+      );
+
+  color:
+    var(--wger-text);
+
+  font-family:
+    var(--wger-font);
+
+  padding:
+    28px;
+
+  overflow:
+    hidden;
 }
+
+
+/* =========================================================
+   CONTENT
+   ========================================================= */
 
 .card-content {
-  padding: 28px;
+  padding: 0;
 }
 
-/* --------------------------------------------------
+
+/* =========================================================
    HERO
--------------------------------------------------- */
+   ========================================================= */
 
 .hero {
-  position: relative;
-
-  padding: 4px 2px 26px;
-
-  border-bottom: 1px solid
-    var(--wger-border);
+  margin-bottom: 24px;
 }
+
 
 .hero-top {
   display: flex;
+
   align-items: center;
+
   justify-content: space-between;
 
-  margin-bottom: 18px;
+  gap: 12px;
+
+  margin-bottom: 10px;
 }
+
 
 .hero-label {
   display: flex;
-  align-items: center;
-  gap: 8px;
 
-  font-size: 11px;
-  font-weight: 800;
+  align-items: center;
+
+  gap: 7px;
+
+  color:
+    var(--wger-accent);
+
+  font-size: 9px;
+
+  font-weight: 900;
 
   letter-spacing: 0.18em;
 
-  color: var(--wger-cyan);
+  text-transform: uppercase;
 }
 
+
 .pulse {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+
+  height: 6px;
+
+  flex-shrink: 0;
 
   border-radius: 50%;
 
-  background: var(--wger-cyan);
+  background:
+    var(--wger-green);
 
   box-shadow:
-    0 0 0 4px
-      rgba(56, 189, 248, 0.10),
-    0 0 18px
-      rgba(56, 189, 248, 0.55);
+    0 0 10px
+      rgba(
+        34,
+        197,
+        94,
+        0.55
+      );
 }
+
 
 .hero-date {
-  font-size: 12px;
-  font-weight: 600;
+  color:
+    var(--wger-muted);
 
-  color: var(--wger-muted);
+  font-size: 10px;
 
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+
+  white-space: nowrap;
 }
+
 
 .hero-main {
   display: flex;
-  align-items: flex-end;
+
+  align-items: center;
+
   justify-content: space-between;
 
   gap: 20px;
 }
 
-.hero h1 {
-  margin: 0;
+
+.hero-main h1 {
+  margin:
+    0
+    0
+    6px;
+
+  overflow: hidden;
+
+  color:
+    var(--wger-text);
 
   font-size: clamp(
-    24px,
+    26px,
     3vw,
     38px
   );
 
-  line-height: 1.05;
+  line-height: 1;
 
   font-weight: 900;
 
-  letter-spacing: -0.035em;
+  letter-spacing: -0.04em;
 
-  background:
-    linear-gradient(
-      90deg,
-      #ffffff 0%,
-      #dbeafe 55%,
-      #7dd3fc 100%
-    );
+  white-space: nowrap;
 
-  -webkit-background-clip: text;
-  background-clip: text;
-
-  -webkit-text-fill-color: transparent;
+  text-overflow: ellipsis;
 }
+
 
 .routine {
-  margin-top: 9px;
+  color:
+    var(--wger-muted);
 
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 11px;
 
-  color: var(--wger-muted);
+  font-weight: 650;
+
+  letter-spacing: 0.04em;
 }
+
 
 .duration-badge {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
   flex-shrink: 0;
 
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  padding:
+    9px
+    12px;
 
-  padding: 9px 13px;
-
-  border: 1px solid
-    rgba(56, 189, 248, 0.18);
-
-  border-radius: 12px;
+  color:
+    var(--wger-accent);
 
   background:
-    rgba(56, 189, 248, 0.06);
+    rgba(
+      56,
+      189,
+      248,
+      0.06
+    );
 
-  color: #bae6fd;
+  border:
+    1px solid
+    rgba(
+      56,
+      189,
+      248,
+      0.18
+    );
 
-  font-size: 13px;
-  font-weight: 800;
+  border-radius: 9px;
+
+  font-size: 10px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.05em;
 }
+
 
 .duration-icon {
-  font-size: 14px;
+  font-size: 13px;
+
+  line-height: 1;
 }
 
-/* --------------------------------------------------
-   KPIs
--------------------------------------------------- */
+
+/* =========================================================
+   KPI GRID
+   ========================================================= */
 
 .kpi-grid {
   display: grid;
@@ -202,28 +258,44 @@
   grid-template-columns:
     repeat(4, minmax(0, 1fr));
 
-  gap: 12px;
+  gap: 10px;
 
-  margin-top: 22px;
+  margin-bottom: 26px;
 }
+
 
 .kpi {
   position: relative;
 
-  min-width: 0;
+  display: flex;
 
-  padding: 17px 16px;
+  align-items: center;
 
-  border-radius: 16px;
+  gap: 12px;
 
-  border: 1px solid
-    rgba(148, 163, 184, 0.10);
+  min-height: 76px;
 
-  background:
-    rgba(15, 30, 50, 0.72);
+  padding:
+    13px
+    14px;
 
   overflow: hidden;
+
+  background:
+    rgba(
+      13,
+      27,
+      45,
+      0.80
+    );
+
+  border:
+    1px solid
+    var(--wger-border);
+
+  border-radius: 14px;
 }
+
 
 .kpi::before {
   content: "";
@@ -231,25 +303,35 @@
   position: absolute;
 
   left: 0;
+
   top: 0;
+
   bottom: 0;
 
   width: 3px;
 
-  background: var(--wger-cyan);
+  background:
+    var(--wger-cyan);
 }
+
 
 .kpi.indigo::before {
-  background: var(--wger-indigo);
+  background:
+    var(--wger-indigo);
 }
+
 
 .kpi.green::before {
-  background: var(--wger-green);
+  background:
+    var(--wger-green);
 }
 
+
 .kpi.orange::before {
-  background: var(--wger-orange);
+  background:
+    var(--wger-orange);
 }
+
 
 .kpi-value {
   overflow: hidden;
@@ -265,55 +347,84 @@
   font-weight: 900;
 
   white-space: nowrap;
+
   text-overflow: ellipsis;
 
-  color: #f8fafc;
+  color:
+    var(--wger-text);
 }
+
 
 .kpi-label {
   margin-top: 9px;
 
   font-size: 9px;
+
   font-weight: 800;
 
   letter-spacing: 0.14em;
 
-  color: var(--wger-muted);
+  color:
+    var(--wger-muted);
 }
 
-/* --------------------------------------------------
+
+/* =========================================================
    PERFORMANCE
--------------------------------------------------- */
+   ========================================================= */
 
 .performance-strip {
   display: flex;
+
   align-items: center;
 
   gap: 14px;
 
   margin-top: 14px;
 
-  padding: 14px 16px;
+  padding:
+    14px
+    16px;
 
   border-radius: 15px;
 
-  border: 1px solid
-    rgba(129, 140, 248, 0.14);
+  border:
+    1px solid
+    rgba(
+      129,
+      140,
+      248,
+      0.14
+    );
 
   background:
     linear-gradient(
       90deg,
-      rgba(129, 140, 248, 0.08),
-      rgba(56, 189, 248, 0.035)
+      rgba(
+        129,
+        140,
+        248,
+        0.08
+      ),
+      rgba(
+        56,
+        189,
+        248,
+        0.035
+      )
     );
 }
 
+
 .performance-icon {
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   width: 42px;
+
   height: 42px;
 
   flex-shrink: 0;
@@ -321,65 +432,90 @@
   border-radius: 12px;
 
   background:
-    rgba(129, 140, 248, 0.12);
+    rgba(
+      129,
+      140,
+      248,
+      0.12
+    );
 
-  border: 1px solid
-    rgba(129, 140, 248, 0.18);
+  border:
+    1px solid
+    rgba(
+      129,
+      140,
+      248,
+      0.18
+    );
 
-  color: var(--wger-indigo);
+  color:
+    var(--wger-indigo);
 
   font-size: 11px;
+
   font-weight: 900;
 
   letter-spacing: 0.04em;
 }
 
+
 .performance-copy {
   display: flex;
+
   flex-direction: column;
 
   min-width: 74px;
 }
 
+
 .performance-copy span {
   font-size: 9px;
+
   font-weight: 800;
 
   letter-spacing: 0.13em;
 
-  color: var(--wger-muted);
+  color:
+    var(--wger-muted);
 }
+
 
 .performance-copy strong {
   margin-top: 3px;
 
   font-size: 21px;
 
-  color: #ffffff;
+  color:
+    var(--wger-text);
 }
+
 
 .performance-description {
   margin-left: auto;
 
   font-size: 12px;
 
-  color: var(--wger-muted);
+  color:
+    var(--wger-muted);
 
   text-align: right;
 }
 
-/* --------------------------------------------------
+
+/* =========================================================
    SECTION
--------------------------------------------------- */
+   ========================================================= */
 
 .exercises-section,
 .muscle-section {
   margin-top: 30px;
 }
 
+
 .section-heading {
   margin-bottom: 15px;
 }
+
 
 .section-kicker {
   display: block;
@@ -387,12 +523,15 @@
   margin-bottom: 4px;
 
   font-size: 9px;
+
   font-weight: 900;
 
   letter-spacing: 0.2em;
 
-  color: var(--wger-cyan);
+  color:
+    var(--wger-cyan);
 }
+
 
 .section-heading h2 {
   margin: 0;
@@ -403,50 +542,72 @@
 
   font-weight: 850;
 
-  color: #f8fafc;
+  color:
+    var(--wger-text);
 }
 
-/* --------------------------------------------------
+
+/* =========================================================
    EXERCISES
--------------------------------------------------- */
+   ========================================================= */
 
 .exercises-list {
   display: flex;
+
   flex-direction: column;
 
   gap: 14px;
 }
+
 
 .exercise-card {
   overflow: hidden;
 
   border-radius: 18px;
 
-  border: 1px solid
-    rgba(148, 163, 184, 0.10);
+  border:
+    1px solid
+    var(--wger-border);
 
   background:
     linear-gradient(
       145deg,
-      rgba(16, 30, 50, 0.94),
-      rgba(8, 20, 35, 0.94)
+      rgba(
+        16,
+        30,
+        50,
+        0.94
+      ),
+      rgba(
+        8,
+        20,
+        35,
+        0.94
+      )
     );
 }
 
+
 .exercise-header {
   display: flex;
+
   align-items: center;
 
   gap: 16px;
 
-  padding: 17px 18px;
+  padding:
+    17px
+    18px;
 
-  border-bottom: 1px solid
-    rgba(148, 163, 184, 0.08);
+  border-bottom:
+    1px solid
+    var(--wger-border);
 }
+
 
 .exercise-heading {
   display: flex;
+
   align-items: center;
 
   min-width: 0;
@@ -454,8 +615,10 @@
   gap: 13px;
 }
 
+
 .exercise-image {
   width: 72px;
+
   height: 72px;
 
   flex-shrink: 0;
@@ -464,65 +627,87 @@
 
   border-radius: 14px;
 
-  border: 1px solid
-    rgba(255, 255, 255, 0.08);
+  border:
+    1px solid
+    rgba(
+      255,
+      255,
+      255,
+      0.08
+    );
 
   background:
     linear-gradient(
       145deg,
-      #111f33,
-      #07111f
+      var(--wger-panel-light),
+      var(--wger-bg)
     );
 }
+
 
 .exercise-image img {
   display: block;
 
   width: 100%;
+
   height: 100%;
 
   object-fit: cover;
 }
 
+
 .exercise-image.no-image {
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
-  color: var(--wger-cyan);
+  color:
+    var(--wger-cyan);
 
   font-size: 25px;
+
   font-weight: 900;
 }
+
 
 .exercise-number {
   flex-shrink: 0;
 
   font-size: 10px;
+
   font-weight: 900;
 
-  color: var(--wger-cyan);
+  color:
+    var(--wger-cyan);
 
   letter-spacing: 0.08em;
 }
+
 
 .exercise-title-block {
   min-width: 0;
 }
 
+
 .exercise-title-block h3 {
   margin: 0;
 
   font-size: 16px;
+
   font-weight: 850;
 
   line-height: 1.2;
 
-  color: #f8fafc;
+  color:
+    var(--wger-text);
 }
+
 
 .muscle-tags {
   display: flex;
+
   flex-wrap: wrap;
 
   gap: 5px;
@@ -530,42 +715,70 @@
   margin-top: 8px;
 }
 
+
 .muscle-tag {
   display: inline-flex;
 
-  padding: 4px 7px;
+  padding:
+    4px
+    7px;
 
   border-radius: 6px;
 
   background:
-    rgba(56, 189, 248, 0.07);
+    rgba(
+      56,
+      189,
+      248,
+      0.07
+    );
 
-  border: 1px solid
-    rgba(56, 189, 248, 0.11);
+  border:
+    1px solid
+    rgba(
+      56,
+      189,
+      248,
+      0.11
+    );
 
-  color: #7dd3fc;
+  color:
+    var(--wger-cyan);
 
   font-size: 9px;
+
   font-weight: 700;
 }
 
+
 .muscle-tag.muted {
-  color: var(--wger-muted);
+  color:
+    var(--wger-muted);
 
   background:
-    rgba(148, 163, 184, 0.04);
+    rgba(
+      148,
+      163,
+      184,
+      0.04
+    );
 
   border-color:
-    rgba(148, 163, 184, 0.08);
+    var(--wger-border);
 }
 
-/* --------------------------------------------------
+
+/* =========================================================
    SET TABLE
--------------------------------------------------- */
+   ========================================================= */
 
 .sets-table {
-  padding: 8px 18px 5px;
+  padding:
+    8px
+    18px
+    5px;
 }
+
 
 .set-header,
 .set-row {
@@ -582,102 +795,154 @@
   gap: 10px;
 }
 
+
 .set-header {
-  padding: 7px 0;
+  padding:
+    7px
+    0;
 
   font-size: 8px;
+
   font-weight: 900;
 
   letter-spacing: 0.14em;
 
-  color: var(--wger-muted);
+  color:
+    var(--wger-muted);
 
-  border-bottom: 1px solid
-    rgba(148, 163, 184, 0.08);
+  border-bottom:
+    1px solid
+    var(--wger-border);
 }
+
 
 .set-row {
   min-height: 38px;
 
-  border-bottom: 1px solid
-    rgba(148, 163, 184, 0.055);
+  border-bottom:
+    1px solid
+    rgba(
+      148,
+      163,
+      184,
+      0.055
+    );
 
   font-size: 12px;
 }
+
 
 .set-row:last-child {
   border-bottom: none;
 }
 
+
 .set-number {
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   width: 26px;
+
   height: 24px;
 
   border-radius: 7px;
 
   background:
-    rgba(148, 163, 184, 0.06);
+    rgba(
+      148,
+      163,
+      184,
+      0.06
+    );
 
-  color: var(--wger-muted);
+  color:
+    var(--wger-muted);
 
   font-size: 10px;
+
   font-weight: 800;
 }
+
 
 .set-reps,
 .set-weight,
 .set-rir {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric:
+    tabular-nums;
 }
 
+
 .actual-value {
-  color: #f8fafc;
+  color:
+    var(--wger-text);
 
   font-weight: 800;
 }
 
+
 .target-value {
-  color: var(--wger-muted);
+  color:
+    var(--wger-muted);
 
   font-size: 10px;
 }
 
+
 .set-weight {
-  color: #bae6fd;
+  color:
+    var(--wger-cyan);
 
   font-weight: 750;
 }
 
+
 .rir-value {
   display: inline-flex;
+
   align-items: center;
+
   justify-content: center;
 
   min-width: 25px;
+
   min-height: 22px;
 
-  padding: 2px 6px;
+  padding:
+    2px
+    6px;
 
   border-radius: 6px;
 
   background:
-    rgba(245, 158, 11, 0.10);
+    rgba(
+      245,
+      158,
+      11,
+      0.10
+    );
 
-  border: 1px solid
-    rgba(245, 158, 11, 0.12);
+  border:
+    1px solid
+    rgba(
+      245,
+      158,
+      11,
+      0.12
+    );
 
-  color: #fbbf24;
+  color:
+    var(--wger-orange);
 
   font-weight: 850;
 }
 
-/* --------------------------------------------------
+
+/* =========================================================
    EXERCISE SUMMARY
--------------------------------------------------- */
+   ========================================================= */
 
 .exercise-summary {
   display: grid;
@@ -689,48 +954,71 @@
 
   margin-top: 4px;
 
-  border-top: 1px solid
-    rgba(148, 163, 184, 0.08);
+  border-top:
+    1px solid
+    var(--wger-border);
 
   background:
-    rgba(148, 163, 184, 0.05);
+    rgba(
+      148,
+      163,
+      184,
+      0.05
+    );
 }
+
 
 .summary-item {
   display: flex;
+
   flex-direction: column;
 
-  padding: 11px 13px;
+  padding:
+    11px
+    13px;
 
   background:
-    rgba(7, 17, 31, 0.70);
+    rgba(
+      7,
+      17,
+      31,
+      0.70
+    );
 }
+
 
 .summary-item span {
   font-size: 8px;
+
   font-weight: 850;
 
   letter-spacing: 0.12em;
 
-  color: var(--wger-muted);
+  color:
+    var(--wger-muted);
 }
+
 
 .summary-item strong {
   margin-top: 4px;
 
   font-size: 12px;
+
   font-weight: 800;
 
-  color: #e2e8f0;
+  color:
+    var(--wger-text-soft);
 }
 
-/* --------------------------------------------------
+
+/* =========================================================
    MUSCLE DISTRIBUTION
--------------------------------------------------- */
+   ========================================================= */
 
 .muscle-section {
   padding-top: 2px;
 }
+
 
 .muscle-layout {
   display: grid;
@@ -747,22 +1035,37 @@
 
   border-radius: 18px;
 
-  border: 1px solid
-    rgba(148, 163, 184, 0.10);
+  border:
+    1px solid
+    var(--wger-border);
 
   background:
     linear-gradient(
       145deg,
-      rgba(16, 30, 50, 0.90),
-      rgba(8, 20, 35, 0.90)
+      rgba(
+        16,
+        30,
+        50,
+        0.90
+      ),
+      rgba(
+        8,
+        20,
+        35,
+        0.90
+      )
     );
 }
 
+
 .donut-wrapper {
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 }
+
 
 .muscle-donut {
   position: relative;
@@ -777,13 +1080,21 @@
   border-radius: 50%;
 
   display: flex;
+
   align-items: center;
+
   justify-content: center;
 
   box-shadow:
     0 0 45px
-      rgba(56, 189, 248, 0.08);
+      rgba(
+        56,
+        189,
+        248,
+        0.08
+      );
 }
+
 
 .muscle-donut::after {
   content: "";
@@ -795,12 +1106,18 @@
   border-radius: 50%;
 
   background:
-    #0a1728;
+    var(--wger-bg-light);
 
   box-shadow:
     inset 0 0 20px
-      rgba(0, 0, 0, 0.35);
+      rgba(
+        0,
+        0,
+        0,
+        0.35
+      );
 }
+
 
 .donut-center {
   position: relative;
@@ -808,40 +1125,51 @@
   z-index: 2;
 
   display: flex;
+
   flex-direction: column;
 
   align-items: center;
+
   justify-content: center;
 }
 
+
 .donut-center strong {
   font-size: 32px;
+
   line-height: 1;
 
   font-weight: 900;
 
-  color: #f8fafc;
+  color:
+    var(--wger-text);
 }
+
 
 .donut-center span {
   margin-top: 5px;
 
   font-size: 9px;
+
   font-weight: 800;
 
   text-transform: uppercase;
 
   letter-spacing: 0.12em;
 
-  color: var(--wger-muted);
+  color:
+    var(--wger-muted);
 }
+
 
 .muscle-legend {
   display: flex;
+
   flex-direction: column;
 
   gap: 11px;
 }
+
 
 .muscle-legend-row {
   display: grid;
@@ -856,16 +1184,24 @@
   gap: 9px;
 }
 
+
 .legend-dot {
   width: 8px;
+
   height: 8px;
 
   border-radius: 50%;
 
   box-shadow:
     0 0 10px
-      rgba(255, 255, 255, 0.10);
+      rgba(
+        255,
+        255,
+        255,
+        0.10
+      );
 }
+
 
 .legend-name {
   min-width: 0;
@@ -873,105 +1209,133 @@
   overflow: hidden;
 
   white-space: nowrap;
+
   text-overflow: ellipsis;
 
   font-size: 12px;
+
   font-weight: 650;
 
-  color: var(--wger-text-soft);
+  color:
+    var(--wger-text-soft);
 }
+
 
 .legend-percentage {
   font-size: 12px;
+
   font-weight: 850;
 
-  color: #f8fafc;
+  color:
+    var(--wger-text);
 
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric:
+    tabular-nums;
 }
+
 
 .empty-muscles {
   padding: 24px;
 
   border-radius: 15px;
 
-  border: 1px dashed
-    rgba(148, 163, 184, 0.15);
+  border:
+    1px dashed
+    var(--wger-border-strong);
 
-  color: var(--wger-muted);
+  color:
+    var(--wger-muted);
 
   font-size: 13px;
 
   text-align: center;
 }
 
-/* --------------------------------------------------
+
+/* =========================================================
    FOOTER
--------------------------------------------------- */
+   ========================================================= */
 
 .footer {
   display: flex;
+
   align-items: center;
 
   gap: 10px;
 
   margin-top: 26px;
+
   padding-top: 18px;
 
-  border-top: 1px solid
+  border-top:
+    1px solid
     var(--wger-border);
 
   font-size: 8px;
+
   font-weight: 800;
 
   letter-spacing: 0.16em;
 
-  color: #475569;
+  color:
+    var(--wger-dim);
 }
 
+
 .footer-brand {
-  color: #64748b;
+  color:
+    var(--wger-dim);
 }
+
 
 .footer-separator {
   width: 3px;
+
   height: 3px;
 
   border-radius: 50%;
 
-  background: #334155;
+  background:
+    var(--wger-dim);
 }
 
-/* --------------------------------------------------
+
+/* =========================================================
    EMPTY / LOADING
--------------------------------------------------- */
+   ========================================================= */
 
 .loading,
 .empty-state {
   padding: 40px 20px;
 
-  color: var(--wger-muted);
+  color:
+    var(--wger-muted);
 
   font-size: 13px;
 
   text-align: center;
 }
 
+
 .empty-state {
   border-radius: 16px;
 
-  border: 1px dashed
-    rgba(148, 163, 184, 0.15);
+  border:
+    1px dashed
+    var(--wger-border-strong);
 }
 
-/* --------------------------------------------------
+
+/* =========================================================
    RESPONSIVE
--------------------------------------------------- */
+   ========================================================= */
 
 @media (max-width: 700px) {
+
   .card-content {
     padding: 18px;
   }
+
 
   .hero-top {
     align-items: flex-start;
@@ -981,6 +1345,7 @@
     gap: 7px;
   }
 
+
   .hero-main {
     align-items: flex-start;
 
@@ -989,24 +1354,31 @@
     gap: 14px;
   }
 
+
   .duration-badge {
     align-self: flex-start;
   }
+
 
   .kpi-grid {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
   }
 
+
   .kpi {
-    padding: 15px 13px;
+    padding:
+      15px
+      13px;
   }
+
 
   .performance-strip {
     align-items: flex-start;
 
     flex-wrap: wrap;
   }
+
 
   .performance-description {
     width: 100%;
@@ -1016,29 +1388,37 @@
     text-align: left;
   }
 
+
   .exercise-header {
     align-items: flex-start;
 
     padding: 14px;
   }
 
+
   .exercise-image {
     width: 58px;
+
     height: 58px;
   }
+
 
   .exercise-heading {
     gap: 8px;
   }
 
+
   .exercise-title-block h3 {
     font-size: 14px;
   }
 
+
   .sets-table {
     padding-left: 14px;
+
     padding-right: 14px;
   }
+
 
   .set-header,
   .set-row {
@@ -1051,14 +1431,17 @@
     gap: 6px;
   }
 
+
   .set-row {
     font-size: 11px;
   }
+
 
   .exercise-summary {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
   }
+
 
   .muscle-layout {
     grid-template-columns: 1fr;
@@ -1068,40 +1451,52 @@
     padding: 18px;
   }
 
+
   .muscle-donut {
     width: 170px;
   }
+
 }
 
+
 @media (max-width: 420px) {
+
   .card-content {
     padding: 14px;
   }
+
 
   .hero h1 {
     font-size: 25px;
   }
 
+
   .kpi-value {
     font-size: 21px;
   }
+
 
   .kpi-label {
     font-size: 8px;
   }
 
+
   .exercise-header {
     gap: 10px;
   }
 
+
   .exercise-image {
     width: 50px;
+
     height: 50px;
   }
+
 
   .exercise-number {
     display: none;
   }
+
 
   .set-header,
   .set-row {
@@ -1112,19 +1507,24 @@
       0.75fr;
   }
 
+
   .set-weight {
     font-size: 10px;
   }
+
 
   .target-value {
     display: none;
   }
 
+
   .summary-item {
     padding: 10px;
   }
 
+
   .summary-item strong {
     font-size: 11px;
   }
+
 }

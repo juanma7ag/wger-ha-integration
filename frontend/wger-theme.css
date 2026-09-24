@@ -1,0 +1,84 @@
+/* =========================================================
+   WGER GLOBAL THEME
+   ========================================================= */
+
+:host {
+  --wger-bg: #07111f;
+  --wger-bg-light: #0b1728;
+
+  --wger-panel: #0d1b2d;
+  --wger-panel-light: #112238;
+
+  --wger-border:
+    rgba(
+      148,
+      163,
+      184,
+      0.12
+    );
+
+  --wger-border-strong:
+    rgba(
+      148,
+      163,
+      184,
+      0.22
+    );
+
+  --wger-text: #f8fafc;
+  --wger-text-soft: #cbd5e1;
+  --wger-muted: #94a3b8;
+  --wger-dim: #64748b;
+
+  /* =======================================================
+     ACCENTS
+     ======================================================= */
+
+  --wger-accent: #38bdf8;
+  --wger-accent-2: #818cf8;
+
+  --wger-cyan: #38bdf8;
+  --wger-indigo: #818cf8;
+  --wger-green: #22c55e;
+  --wger-orange: #f59e0b;
+
+  /* =======================================================
+     CARD BACKGROUND
+     ======================================================= */
+
+  --wger-card-bg:
+    radial-gradient(
+      circle at 90% 0%,
+      rgba(56, 189, 248, 0.08),
+      transparent 34%
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      rgba(129, 140, 248, 0.06),
+      transparent 32%
+    ),
+    var(--wger-bg);
+
+  /* =======================================================
+     COMPONENT
+     ======================================================= */
+
+  --wger-radius: 18px;
+
+  --wger-font:
+    Inter,
+    Roboto,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+/* =========================================================
+   GLOBAL RESET
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
