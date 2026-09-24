@@ -1154,7 +1154,7 @@ class WgerLastWorkoutCard extends HTMLElement {
 
   getGridOptions() {
     return {
-      rows: 14,
+      rows: 65,
       columns: 12,
       min_rows: 8,
       min_columns: 6,

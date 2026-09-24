@@ -519,7 +519,7 @@ class WgerKpiCard extends HTMLElement {
 
   getGridOptions() {
     return {
-      rows: 6,
+      rows: 4,
       columns: 12,
       min_rows: 4,
       min_columns: 6,
