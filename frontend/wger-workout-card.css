@@ -1,0 +1,1051 @@
+:host {
+  display: block;
+
+  --wger-bg: #07111f;
+  --wger-bg-light: #0b1728;
+
+  --wger-panel: #0d1b2d;
+  --wger-panel-light: #112238;
+
+  --wger-border: rgba(148, 163, 184, 0.12);
+  --wger-border-strong: rgba(148, 163, 184, 0.22);
+
+  --wger-text: #f8fafc;
+  --wger-muted: #94a3b8;
+  --wger-dim: #64748b;
+
+  --wger-accent: #38bdf8;
+  --wger-accent-2: #818cf8;
+
+  --wger-radius: 18px;
+
+  font-family:
+    Inter,
+    Roboto,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   MAIN CARD
+   ========================================================= */
+
+.wger-card {
+  position: relative;
+
+  overflow: hidden;
+
+  padding: 26px;
+
+  color: var(--wger-text);
+
+  background:
+    radial-gradient(
+      circle at 85% 0%,
+      rgba(56, 189, 248, 0.08),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 0% 100%,
+      rgba(129, 140, 248, 0.06),
+      transparent 30%
+    ),
+    var(--wger-bg);
+
+  border: 1px solid var(--wger-border);
+
+  border-radius: 24px;
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.card-header {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 20px;
+
+  margin-bottom: 24px;
+}
+
+
+.header-main {
+  min-width: 0;
+}
+
+
+.eyebrow {
+  margin-bottom: 7px;
+
+  color: var(--wger-accent);
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.18em;
+
+  text-transform: uppercase;
+}
+
+
+.card-header h1 {
+  margin: 0;
+
+  overflow: hidden;
+
+  font-size: clamp(
+    25px,
+    3vw,
+    38px
+  );
+
+  line-height: 1;
+
+  font-weight: 900;
+
+  letter-spacing: -0.04em;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   WGER BADGE
+   ========================================================= */
+
+.header-badge {
+  flex-shrink: 0;
+
+  padding: 8px 12px;
+
+  color: var(--wger-accent);
+
+  border: 1px solid
+    rgba(56, 189, 248, 0.2);
+
+  border-radius: 8px;
+
+  background:
+    rgba(56, 189, 248, 0.05);
+
+  font-size: 10px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.12em;
+}
+
+
+.header-badge span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: var(--wger-dim);
+
+  font-size: 7px;
+
+  letter-spacing: 0.16em;
+}
+
+
+/* =========================================================
+   KPI STATS
+   ========================================================= */
+
+.stats-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 10px;
+
+  margin-bottom: 26px;
+}
+
+
+.stat-card {
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  min-height: 76px;
+
+  padding: 13px 15px;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(17, 34, 56, 0.95),
+      rgba(8, 20, 34, 0.95)
+    );
+
+  border: 1px solid
+    var(--wger-border);
+
+  border-radius: 13px;
+}
+
+
+.stat-card::after {
+  content: "";
+
+  position: absolute;
+
+  right: -20px;
+
+  bottom: -30px;
+
+  width: 70px;
+
+  height: 70px;
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(56, 189, 248, 0.1),
+      transparent 70%
+    );
+
+  pointer-events: none;
+}
+
+
+.stat-number {
+  color: var(--wger-dim);
+
+  font-size: 10px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.08em;
+}
+
+
+.stat-content {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 3px;
+}
+
+
+.stat-content strong {
+  position: relative;
+
+  z-index: 1;
+
+  font-size: 22px;
+
+  line-height: 1;
+
+  font-weight: 900;
+
+  letter-spacing: -0.03em;
+}
+
+
+.stat-content span {
+  position: relative;
+
+  z-index: 1;
+
+  color: var(--wger-muted);
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  letter-spacing: 0.1em;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   EXERCISES SECTION
+   ========================================================= */
+
+.exercises-section {
+  margin-top: 6px;
+}
+
+
+.exercise-section-header {
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  margin-bottom: 12px;
+}
+
+
+.section-kicker {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color: var(--wger-accent);
+
+  font-size: 8px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.18em;
+
+  text-transform: uppercase;
+}
+
+
+.exercise-section-header h2 {
+  margin: 0;
+
+  font-size: 16px;
+
+  font-weight: 850;
+
+  letter-spacing: -0.02em;
+}
+
+
+.exercise-count {
+  color: var(--wger-muted);
+
+  font-size: 9px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   EXERCISE LIST
+   ========================================================= */
+
+.exercise-list {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+
+/* =========================================================
+   EXERCISE CARD
+   ========================================================= */
+
+.exercise-card {
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(13, 27, 45, 0.98),
+      rgba(7, 17, 31, 0.98)
+    );
+
+  border: 1px solid
+    var(--wger-border);
+
+  border-radius: var(--wger-radius);
+
+  transition:
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.exercise-card:hover {
+  border-color:
+    var(--wger-border-strong);
+
+  transform:
+    translateY(-1px);
+
+  box-shadow:
+    0 12px 30px
+      rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================================
+   EXERCISE HEADER
+   ========================================================= */
+
+.exercise-top {
+  display: grid;
+
+  grid-template-columns:
+    45px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding:
+    16px
+    17px
+    13px;
+}
+
+
+.exercise-index {
+  color: var(--wger-accent);
+
+  font-size: 22px;
+
+  font-weight: 950;
+
+  line-height: 1;
+
+  letter-spacing: -0.05em;
+}
+
+
+.exercise-title {
+  min-width: 0;
+}
+
+
+.exercise-title h3 {
+  margin:
+    0
+    0
+    7px;
+
+  overflow: hidden;
+
+  color: #f8fafc;
+
+  font-size: 15px;
+
+  font-weight: 850;
+
+  letter-spacing: -0.02em;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   TAGS
+   ========================================================= */
+
+.exercise-tags {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 5px;
+}
+
+
+.tag {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding:
+    4px
+    7px;
+
+  border-radius: 5px;
+
+  font-size: 7px;
+
+  font-weight: 850;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+}
+
+
+.muscle-tag {
+  color: #bae6fd;
+
+  background:
+    rgba(56, 189, 248, 0.09);
+
+  border:
+    1px solid
+    rgba(56, 189, 248, 0.12);
+}
+
+
+.equipment-tag {
+  color: #c4b5fd;
+
+  background:
+    rgba(129, 140, 248, 0.08);
+
+  border:
+    1px solid
+    rgba(129, 140, 248, 0.12);
+}
+
+
+/* =========================================================
+   EXERCISE BODY
+   ========================================================= */
+
+.exercise-body {
+  display: grid;
+
+  grid-template-columns:
+    220px
+    minmax(0, 1fr);
+
+  gap: 0;
+
+  border-top:
+    1px solid
+    var(--wger-border);
+}
+
+
+/* =========================================================
+   EXERCISE IMAGE
+   ========================================================= */
+
+.exercise-image {
+  position: relative;
+
+  min-height: 165px;
+
+  overflow: hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      #0f243a,
+      #08111d
+    );
+}
+
+
+.exercise-image::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent 55%,
+      rgba(7, 17, 31, 0.8)
+    );
+
+  pointer-events: none;
+}
+
+
+.exercise-image img {
+  display: block;
+
+  width: 100%;
+
+  height: 100%;
+
+  min-height: 165px;
+
+  object-fit: cover;
+}
+
+
+/* =========================================================
+   IMAGE PLACEHOLDER
+   ========================================================= */
+
+.image-placeholder {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+
+.image-placeholder span {
+  color:
+    rgba(
+      56,
+      189,
+      248,
+      0.25
+    );
+
+  font-size: 70px;
+
+  font-weight: 950;
+
+  letter-spacing: -0.06em;
+}
+
+
+/* =========================================================
+   PLANNING AREA
+   ========================================================= */
+
+.planning-container {
+  min-width: 0;
+
+  padding:
+    14px
+    16px;
+}
+
+
+.planning-header,
+.planning-row {
+  display: grid;
+
+  grid-template-columns:
+    minmax(80px, 1fr)
+    minmax(80px, 1fr);
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+/* =========================================================
+   PLANNING HEADER
+   ========================================================= */
+
+.planning-header {
+  padding-bottom: 9px;
+
+  color: var(--wger-dim);
+
+  font-size: 7px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.12em;
+
+  text-transform: uppercase;
+
+  border-bottom:
+    1px solid
+    var(--wger-border);
+}
+
+
+/* =========================================================
+   PLANNING ROW
+   ========================================================= */
+
+.planning-row {
+  min-height: 42px;
+
+  color: #cbd5e1;
+
+  font-size: 12px;
+
+  font-weight: 650;
+
+  border-bottom:
+    1px solid
+    rgba(
+      148,
+      163,
+      184,
+      0.06
+    );
+}
+
+
+.planning-row:last-child {
+  border-bottom: none;
+}
+
+
+.planning-series,
+.planning-reps {
+  display: flex;
+
+  align-items: center;
+}
+
+
+.planning-series {
+  color: #cbd5e1;
+
+  font-weight: 700;
+}
+
+
+.planning-series::before {
+  content: "";
+
+  width: 5px;
+
+  height: 5px;
+
+  margin-right: 8px;
+
+  flex-shrink: 0;
+
+  background:
+    var(--wger-accent);
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 8px
+      rgba(
+        56,
+        189,
+        248,
+        0.45
+      );
+}
+
+
+.planning-reps {
+  color: #f8fafc;
+
+  font-size: 14px;
+
+  font-weight: 850;
+}
+
+
+/* =========================================================
+   EMPTY PLANNING
+   ========================================================= */
+
+.planning-empty {
+  padding-top: 14px;
+
+  color: var(--wger-dim);
+
+  font-size: 9px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   EXERCISE NOTES
+   ========================================================= */
+
+.exercise-notes {
+  padding:
+    10px
+    17px
+    13px;
+
+  color: var(--wger-muted);
+
+  border-top:
+    1px solid
+    var(--wger-border);
+
+  font-size: 9px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.card-footer {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-top: 18px;
+
+  padding-top: 13px;
+
+  color: var(--wger-dim);
+
+  border-top:
+    1px solid
+    var(--wger-border);
+
+  font-size: 7px;
+
+  font-weight: 900;
+
+  letter-spacing: 0.16em;
+}
+
+
+/* =========================================================
+   ERROR
+   ========================================================= */
+
+.error {
+  padding: 20px;
+
+  color: #fca5a5;
+
+  background:
+    rgba(
+      127,
+      29,
+      29,
+      0.2
+    );
+
+  border:
+    1px solid
+    rgba(
+      248,
+      113,
+      113,
+      0.2
+    );
+
+  border-radius: 12px;
+}
+
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 850px) {
+
+  .exercise-body {
+    grid-template-columns:
+      170px
+      minmax(0, 1fr);
+  }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 600px) {
+
+  .wger-card {
+    padding: 15px;
+
+    border-radius: 18px;
+  }
+
+
+  .card-header {
+    align-items: flex-start;
+  }
+
+
+  .card-header h1 {
+    font-size: 25px;
+  }
+
+
+  .header-badge {
+    display: none;
+  }
+
+
+  .stats-grid {
+    gap: 7px;
+  }
+
+
+  .stat-card {
+    min-height: 65px;
+
+    padding: 10px;
+  }
+
+
+  .stat-number {
+    display: none;
+  }
+
+
+  .stat-content strong {
+    font-size: 18px;
+  }
+
+
+  .stat-content span {
+    font-size: 7px;
+  }
+
+
+  .exercise-top {
+    grid-template-columns:
+      35px
+      minmax(0, 1fr);
+
+    padding:
+      13px;
+  }
+
+
+  .exercise-index {
+    font-size: 18px;
+  }
+
+
+  .exercise-title h3 {
+    font-size: 13px;
+  }
+
+
+  .exercise-body {
+    grid-template-columns: 1fr;
+  }
+
+
+  .exercise-image {
+    min-height: 150px;
+
+    max-height: 200px;
+  }
+
+
+  .exercise-image img {
+    min-height: 150px;
+  }
+
+
+  .planning-container {
+    padding: 10px;
+  }
+
+
+  .planning-header,
+  .planning-row {
+    grid-template-columns:
+      1fr
+      1fr;
+
+    gap: 8px;
+  }
+
+
+  .planning-row {
+    min-height: 38px;
+
+    font-size: 10px;
+  }
+
+
+  .planning-reps {
+    font-size: 12px;
+  }
+
+
+  .tag {
+    font-size: 6px;
+
+    padding:
+      3px
+      5px;
+  }
+
+}
+
+
+/* =========================================================
+   VERY SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 400px) {
+
+  .wger-card {
+    padding: 11px;
+  }
+
+
+  .stats-grid {
+    grid-template-columns:
+      repeat(3, 1fr);
+  }
+
+
+  .stat-card {
+    justify-content: center;
+  }
+
+
+  .stat-content {
+    align-items: center;
+
+    text-align: center;
+  }
+
+
+  .stat-content strong {
+    font-size: 16px;
+  }
+
+
+  .stat-content span {
+    font-size: 6px;
+  }
+
+
+  .exercise-title h3 {
+    font-size: 12px;
+  }
+
+
+  .planning-header {
+    font-size: 6px;
+  }
+
+}

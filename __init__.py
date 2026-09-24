@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from aiohttp import ClientSession
-
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import (
@@ -33,6 +34,18 @@ async def async_setup(
     config: dict,
 ) -> bool:
     """Set up integration."""
+
+    frontend_path = Path(__file__).parent / "frontend"
+
+    await hass.http.async_register_static_paths(
+        [
+            StaticPathConfig(
+                "/wger/frontend",
+                str(frontend_path),
+                False,
+            )
+        ]
+    )
 
     return True
 
