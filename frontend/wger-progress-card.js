@@ -46,14 +46,14 @@ class WgerProgressCard extends HTMLElement {
     return 9;
   }
 
-  getGridOptions() {
-    return {
-      rows: 9,
-      columns: 12,
-      min_rows: 6,
-      min_columns: 6,
-    };
-  }
+getGridOptions() {
+  return {
+    rows: 10,
+    columns: 12,
+    min_rows: 5,
+    min_columns: 6,
+  };
+}
 
   _loadStyles() {
     if (this._cssLoaded) {
@@ -242,13 +242,13 @@ class WgerProgressCard extends HTMLElement {
 
   _buildChart(data) {
     const width = 760;
-    const height = 270;
+    const height = 210;
 
     const padding = {
-      top: 30,
-      right: 28,
-      bottom: 54,
-      left: 62,
+      top: 24,
+      right: 24,
+      bottom: 42,
+      left: 58,
     };
 
     const chartWidth =
@@ -382,7 +382,7 @@ class WgerProgressCard extends HTMLElement {
         (point) => `
           <text
             x="${point.x}"
-            y="${height - 20}"
+            y="${height - 14}"
             text-anchor="middle"
             class="date-label"
           >
