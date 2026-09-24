@@ -44,6 +44,180 @@ class WgerExercisesApi:
 
         return url
 
+    @staticmethod
+    def _normalize_muscle(
+        muscle,
+    ) -> dict | None:
+        """Normalize a Wger muscle entry."""
+
+        if isinstance(
+            muscle,
+            str,
+        ):
+            if not muscle.strip():
+                return None
+
+            return {
+                "id": None,
+                "name": muscle.strip(),
+                "name_en": None,
+                "is_front": None,
+                "image_url_main": None,
+                "image_url_secondary": None,
+            }
+
+        if not isinstance(
+            muscle,
+            dict,
+        ):
+            return None
+
+        # Wger normally returns the muscle directly as an object.
+        # Keep support for nested representations as well.
+        muscle_data = muscle
+
+        nested_muscle = muscle.get(
+            "muscle"
+        )
+
+        if isinstance(
+            nested_muscle,
+            dict,
+        ):
+            muscle_data = nested_muscle
+
+        name = (
+            muscle_data.get(
+                "name"
+            )
+            or muscle.get(
+                "name"
+            )
+            or muscle_data.get(
+                "name_en"
+            )
+            or muscle.get(
+                "name_en"
+            )
+        )
+
+        if not name:
+            return None
+
+        return {
+            "id": (
+                muscle_data.get(
+                    "id"
+                )
+                or muscle.get(
+                    "id"
+                )
+            ),
+            "name": name,
+            "name_en": (
+                muscle_data.get(
+                    "name_en"
+                )
+                or muscle.get(
+                    "name_en"
+                )
+            ),
+            "is_front": (
+                muscle_data.get(
+                    "is_front"
+                )
+                if "is_front" in muscle_data
+                else muscle.get(
+                    "is_front"
+                )
+            ),
+            "image_url_main": (
+                muscle_data.get(
+                    "image_url_main"
+                )
+                or muscle.get(
+                    "image_url_main"
+                )
+            ),
+            "image_url_secondary": (
+                muscle_data.get(
+                    "image_url_secondary"
+                )
+                or muscle.get(
+                    "image_url_secondary"
+                )
+            ),
+        }
+
+    def _normalize_muscles(
+        self,
+        muscles,
+    ) -> list[dict]:
+        """Normalize a collection of Wger muscles."""
+
+        if not isinstance(
+            muscles,
+            list,
+        ):
+            return []
+
+        normalized = []
+
+        for muscle in muscles:
+            normalized_muscle = (
+                self._normalize_muscle(
+                    muscle
+                )
+            )
+
+            if not normalized_muscle:
+                continue
+
+            normalized_muscle[
+                "image_url_main"
+            ] = self._normalize_image_url(
+                normalized_muscle.get(
+                    "image_url_main"
+                )
+            )
+
+            normalized_muscle[
+                "image_url_secondary"
+            ] = self._normalize_image_url(
+                normalized_muscle.get(
+                    "image_url_secondary"
+                )
+            )
+
+            normalized.append(
+                normalized_muscle
+            )
+
+        return normalized
+
+    @staticmethod
+    def _get_muscle_names(
+        muscles: list[dict],
+    ) -> list[str]:
+        """Extract muscle names from normalized muscles."""
+
+        names = []
+
+        for muscle in muscles:
+            name = muscle.get(
+                "name"
+            )
+
+            if not name:
+                continue
+
+            if name not in names:
+                names.append(
+                    name
+                )
+
+        return names
+
     async def get_exercises(
         self,
         limit: int = DEFAULT_LOG_LIMIT,
@@ -156,14 +330,18 @@ class WgerExercisesApi:
             {}
         )
 
-        muscles = exercise.get(
-            "muscles",
-            []
+        muscles = self._normalize_muscles(
+            exercise.get(
+                "muscles",
+                []
+            )
         )
 
-        muscles_secondary = exercise.get(
-            "muscles_secondary",
-            []
+        muscles_secondary = self._normalize_muscles(
+            exercise.get(
+                "muscles_secondary",
+                []
+            )
         )
 
         equipment = exercise.get(
@@ -330,66 +508,16 @@ class WgerExercisesApi:
                     "name"
                 ),
             },
-            "muscles": [
-                {
-                    "id": muscle.get(
-                        "id"
-                    ),
-                    "name": muscle.get(
-                        "name"
-                    ),
-                    "name_en": muscle.get(
-                        "name_en"
-                    ),
-                    "is_front": muscle.get(
-                        "is_front"
-                    ),
-                    "image_url_main": self._normalize_image_url(
-                        muscle.get(
-                            "image_url_main"
-                        )
-                    ),
-                    "image_url_secondary": self._normalize_image_url(
-                        muscle.get(
-                            "image_url_secondary"
-                        )
-                    ),
-                }
-                for muscle in muscles
-                if muscle.get(
-                    "name"
+            "muscles": muscles,
+            "muscles_secondary": muscles_secondary,
+            "muscle_names": self._get_muscle_names(
+                muscles
+            ),
+            "muscle_names_secondary": (
+                self._get_muscle_names(
+                    muscles_secondary
                 )
-            ],
-            "muscles_secondary": [
-                {
-                    "id": muscle.get(
-                        "id"
-                    ),
-                    "name": muscle.get(
-                        "name"
-                    ),
-                    "name_en": muscle.get(
-                        "name_en"
-                    ),
-                    "is_front": muscle.get(
-                        "is_front"
-                    ),
-                    "image_url_main": self._normalize_image_url(
-                        muscle.get(
-                            "image_url_main"
-                        )
-                    ),
-                    "image_url_secondary": self._normalize_image_url(
-                        muscle.get(
-                            "image_url_secondary"
-                        )
-                    ),
-                }
-                for muscle in muscles_secondary
-                if muscle.get(
-                    "name"
-                )
-            ],
+            ),
             "equipment": [
                 {
                     "id": item.get(
@@ -400,7 +528,11 @@ class WgerExercisesApi:
                     ),
                 }
                 for item in equipment
-                if item.get(
+                if isinstance(
+                    item,
+                    dict,
+                )
+                and item.get(
                     "name"
                 )
             ],
@@ -423,7 +555,11 @@ class WgerExercisesApi:
                     if spanish_translation
                     else []
                 )
-                if note.get(
+                if isinstance(
+                    note,
+                    dict,
+                )
+                and note.get(
                     "comment"
                 )
             ],
@@ -467,4 +603,5 @@ class WgerExercisesApi:
         self,
     ) -> None:
         """Clear the exercise cache."""
+
         self._exercise_cache.clear()

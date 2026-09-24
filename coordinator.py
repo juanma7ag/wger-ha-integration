@@ -52,6 +52,7 @@ class WgerDataUpdateCoordinator(
             measurements,
             trainings_this_week,
             current_weight,
+            last_workout,
         ) = await asyncio.gather(
             self.api.profile.get_profile(),
             self.api.routines.get_routines(),
@@ -64,6 +65,7 @@ class WgerDataUpdateCoordinator(
             ),
             self.api.workouts.get_trainings_this_week(),
             self.api.measurements.get_current_weight(),
+            self.api.workouts.get_last_workout_analysis(),
         )
 
         # Calculate workout metrics from the already
@@ -190,6 +192,102 @@ class WgerDataUpdateCoordinator(
             ):
                 active_routine = routine
                 break
+
+        # Enrich the last workout with routine and
+        # workout sequence information.
+        if last_workout:
+            last_workout = deepcopy(
+                last_workout
+            )
+
+            routine_id = last_workout.get(
+                "routine_id"
+            )
+
+            workout_date = last_workout.get(
+                "date"
+            )
+
+            # Resolve the routine name from the routines
+            # already fetched by the coordinator.
+            if routine_id is not None:
+                for routine in routines.get(
+                    "results",
+                    [],
+                ):
+                    if routine.get(
+                        "id"
+                    ) == routine_id:
+                        last_workout[
+                            "routine_name"
+                        ] = routine.get(
+                            "name"
+                        )
+                        break
+
+            # Resolve the workout/day name and iteration
+            # from the routine date sequence.
+            if (
+                routine_id is not None
+                and workout_date
+            ):
+                try:
+                    sequence = (
+                        await self.api.routines
+                        .get_routine_date_sequence_display(
+                            routine_id
+                        )
+                    )
+
+                    if isinstance(
+                        sequence,
+                        list,
+                    ):
+                        sequence_entries = sequence
+
+                    else:
+                        sequence_entries = sequence.get(
+                            "results",
+                            [],
+                        )
+
+                    for entry in sequence_entries:
+                        if entry.get(
+                            "date"
+                        ) != workout_date:
+                            continue
+
+                        last_workout[
+                            "iteration"
+                        ] = entry.get(
+                            "iteration"
+                        )
+
+                        day_data = entry.get(
+                            "day",
+                            {}
+                        )
+
+                        if isinstance(
+                            day_data,
+                            dict,
+                        ):
+                            last_workout[
+                                "workout_name"
+                            ] = day_data.get(
+                                "name"
+                            )
+
+                        # The matching date has been found.
+                        break
+
+                except Exception as err:
+                    _LOGGER.warning(
+                        "Unable to resolve last workout sequence "
+                        "for routine %s: %s",
+                        routine_id,
+                        err,
+                    )
 
         # Get statistics and workout sequence
         # for the active routine.
@@ -420,7 +518,7 @@ class WgerDataUpdateCoordinator(
             ):
                 exercise_ids = slot.get(
                     "exercises",
-                    [],
+                    []
                 )
 
                 next_exercises += len(
@@ -475,11 +573,17 @@ class WgerDataUpdateCoordinator(
             next_repetitions,
         )
 
+        _LOGGER.debug(
+            "Last workout analysis: %s",
+            last_workout,
+        )
+
         return {
             "profile": profile,
             "routines": routines,
             "active_routine": active_routine,
             "latest_session": latest_session,
+            "last_workout": last_workout,
             "weights": weights,
             "measurements": measurements,
             "trainings_this_week": trainings_this_week,
@@ -530,6 +634,17 @@ class WgerDataUpdateCoordinator(
 
         return self.data.get(
             "latest_session"
+        )
+
+    @property
+    def last_workout(
+        self,
+    ) -> dict | None:
+        if self.data is None:
+            return None
+
+        return self.data.get(
+            "last_workout"
         )
 
     @property

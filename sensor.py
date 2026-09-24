@@ -46,6 +46,11 @@ SENSORS: tuple[
         icon="mdi:history",
     ),
     WgerSensorEntityDescription(
+        key="last_workout",
+        name="Last Workout",
+        icon="mdi:history",
+    ),
+    WgerSensorEntityDescription(
         key="last_workout_duration",
         name="Last Workout Duration",
         native_unit_of_measurement="min",
@@ -195,6 +200,24 @@ class WgerSensor(
                 "datetime_start"
             )
 
+        if key == "last_workout":
+            workout = (
+                self.coordinator.last_workout
+            )
+
+            if not workout:
+                return None
+
+            return (
+                workout.get(
+                    "workout_name"
+                )
+                or workout.get(
+                    "routine_name"
+                )
+                or "Last Workout"
+            )
+
         if key == "last_workout_duration":
             return (
                 self.coordinator.last_workout_duration
@@ -287,9 +310,67 @@ class WgerSensor(
 
     @property
     def extra_state_attributes(self):
-        """Return additional state attributes for today's or next workout."""
+        """Return additional state attributes."""
 
-        if self.entity_description.key not in (
+        key = self.entity_description.key
+
+        if key == "last_workout":
+            workout = (
+                self.coordinator.last_workout
+            )
+
+            if not workout:
+                return None
+
+            return {
+                "session_id": workout.get(
+                    "session_id"
+                ),
+                "routine_id": workout.get(
+                    "routine_id"
+                ),
+                "iteration": workout.get(
+                    "iteration"
+                ),
+                "date": workout.get(
+                    "date"
+                ),
+                "date_start": workout.get(
+                    "date_start"
+                ),
+                "date_end": workout.get(
+                    "date_end"
+                ),
+                "duration": workout.get(
+                    "duration"
+                ),
+                "workout_name": workout.get(
+                    "workout_name"
+                ),
+                "routine_name": workout.get(
+                    "routine_name"
+                ),
+                "totals": workout.get(
+                    "totals",
+                    {},
+                ),
+                "average_rir": workout.get(
+                    "average_rir"
+                ),
+                "exercises": workout.get(
+                    "exercises",
+                    [],
+                ),
+                "muscle_distribution": workout.get(
+                    "muscle_distribution",
+                    [],
+                ),
+                "muscle_distribution_note": workout.get(
+                    "muscle_distribution_note"
+                ),
+            }
+
+        if key not in (
                 "todays_workout",
                 "next_workout",
         ):
@@ -297,8 +378,7 @@ class WgerSensor(
 
         workout = (
             self.coordinator.todays_workout
-            if self.entity_description.key
-               == "todays_workout"
+            if key == "todays_workout"
             else self.coordinator.next_workout
         )
 
@@ -350,13 +430,13 @@ class WgerSensor(
             [
                 exercise_id
                 for slot in workout.get(
-                "slots",
-                [],
-            )
+                    "slots",
+                    [],
+                )
                 for exercise_id in slot.get(
-                "exercises",
-                [],
-            )
+                    "exercises",
+                    [],
+                )
             ]
         )
 
@@ -530,7 +610,7 @@ class WgerSensor(
                     )
 
                     exercise_data["total_repetitions"] += (
-                            sets_value * repetitions_value
+                        sets_value * repetitions_value
                     )
 
                     attributes["total_sets"] += (
@@ -538,7 +618,7 @@ class WgerSensor(
                     )
 
                     attributes["total_repetitions"] += (
-                            sets_value * repetitions_value
+                        sets_value * repetitions_value
                     )
 
                 if exercise_data["name"]:
