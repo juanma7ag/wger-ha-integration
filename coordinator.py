@@ -15,8 +15,12 @@ from homeassistant.helpers.update_coordinator import (
     UpdateFailed,
 )
 
+from homeassistant.util import dt as dt_util
+
 from .api import WgerApi, WgerApiError, WgerAuthenticationError
-from .const import DOMAIN
+
+from .const import DOMAIN, CONF_WEEKLY_GOAL, DEFAULT_WEEKLY_GOAL
+from .api.weekly_goal import build_weekly_goal
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,6 +39,7 @@ class WgerDataUpdateCoordinator(
         """Initialize the coordinator."""
 
         self.api = api
+        self.entry = entry
 
         super().__init__(
             hass,
@@ -58,6 +63,9 @@ class WgerDataUpdateCoordinator(
     async def _async_fetch_data(self) -> dict:
         """Fetch data from Wger."""
 
+        now = dt_util.now()
+        weekly_target = self.entry.options.get(CONF_WEEKLY_GOAL, DEFAULT_WEEKLY_GOAL)
+
         (
             profile,
             routines,
@@ -68,6 +76,7 @@ class WgerDataUpdateCoordinator(
             current_weight,
             last_workout,
             workout_progress,
+            weekly_consistency,
         ) = await asyncio.gather(
             self.api.profile.get_profile(),
             self.api.routines.get_routines(),
@@ -78,10 +87,11 @@ class WgerDataUpdateCoordinator(
             self.api.measurements.get_measurements(
                 limit=100
             ),
-            self.api.workouts.get_trainings_this_week(),
+            self.api.workouts.get_trainings_this_week(now=now),
             self.api.measurements.get_current_weight(),
             self.api.workouts.get_last_workout_analysis(),
             self.api.workouts.get_workout_progress(),
+            self.api.workouts.get_weekly_consistency(weekly_target, now),
         )
 
         # Calculate workout metrics from the already
@@ -718,6 +728,12 @@ class WgerDataUpdateCoordinator(
             "weights": weights,
             "measurements": measurements,
             "trainings_this_week": trainings_this_week,
+            "weekly_consistency": weekly_consistency,
+            "weekly_goal": build_weekly_goal(
+                trainings_this_week,
+                weekly_target,
+                now,
+            ),
             "current_weight": current_weight,
             "last_workout_duration": last_workout_duration,
             "days_since_last_workout": days_since_last_workout,

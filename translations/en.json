@@ -26,5 +26,16 @@
       "already_configured": "This Wger server is already configured",
       "reauth_successful": "Reauthentication successful"
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Weekly training goal",
+        "description": "Number of completed sessions per week (Monday to Sunday). Choose between 1 and 21.",
+        "data": {
+          "weekly_goal": "Workouts per week"
+        }
+      }
+    }
   }
 }

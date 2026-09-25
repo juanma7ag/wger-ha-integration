@@ -26,5 +26,16 @@
       "already_configured": "Este servidor Wger ya está configurado",
       "reauth_successful": "Autenticación actualizada correctamente"
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Objetivo semanal",
+        "description": "Número de sesiones finalizadas por semana (lunes a domingo). Puedes elegir entre 1 y 21.",
+        "data": {
+          "weekly_goal": "Entrenamientos por semana"
+        }
+      }
+    }
   }
 }

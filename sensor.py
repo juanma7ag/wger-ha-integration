@@ -30,6 +30,24 @@ SENSORS: tuple[
     ...
 ] = (
     WgerSensorEntityDescription(
+        key="weekly_streak", name="Weekly Streak",
+        native_unit_of_measurement="weeks", icon="mdi:fire",
+    ),
+    WgerSensorEntityDescription(
+        key="weekly_best_streak", name="Weekly Best Streak",
+        native_unit_of_measurement="weeks", icon="mdi:trophy-outline",
+    ),
+    WgerSensorEntityDescription(
+        key="weekly_goal_target", name="Weekly Goal Target", icon="mdi:target",
+    ),
+    WgerSensorEntityDescription(
+        key="weekly_goal_progress", name="Weekly Goal Progress",
+        native_unit_of_measurement="%", icon="mdi:progress-check",
+    ),
+    WgerSensorEntityDescription(
+        key="weekly_goal_remaining", name="Weekly Goal Remaining", icon="mdi:calendar-check",
+    ),
+    WgerSensorEntityDescription(
         key="current_weight",
         name="Current Weight",
         native_unit_of_measurement="kg",
@@ -178,7 +196,10 @@ class WgerSensor(
         self.entity_description = description
 
         self._attr_unique_id = (
-            f"wger_{description.key}"
+            f"wger_{coordinator.entry.entry_id}_{description.key}"
+            if description.key.startswith("weekly_goal_")
+            or description.key in ("weekly_streak", "weekly_best_streak")
+            else f"wger_{description.key}"
         )
 
     @property
@@ -186,6 +207,16 @@ class WgerSensor(
         """Return sensor state."""
 
         key = self.entity_description.key
+
+        if key in ("weekly_streak", "weekly_best_streak"):
+            metric = "current_streak" if key == "weekly_streak" else "best_streak"
+            return self.coordinator.data.get("weekly_consistency", {}).get(metric)
+
+
+        if key.startswith("weekly_goal_"):
+            return self.coordinator.data.get("weekly_goal", {}).get(
+                key.removeprefix("weekly_goal_")
+            )
 
         if key == "current_weight":
             return self.coordinator.current_weight
@@ -323,6 +354,13 @@ class WgerSensor(
         """Return additional state attributes."""
 
         key = self.entity_description.key
+
+        if key in ("weekly_streak", "weekly_best_streak"):
+            return self.coordinator.data.get("weekly_consistency", {})
+
+
+        if key.startswith("weekly_goal_"):
+            return self.coordinator.data.get("weekly_goal", {})
 
         if key == "last_workout":
             workout = (

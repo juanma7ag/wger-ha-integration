@@ -10,6 +10,8 @@ DOMAIN = "wger"
 
 CONF_URL = "url"
 CONF_TOKEN = "token"
+CONF_WEEKLY_GOAL = "weekly_goal"
+DEFAULT_WEEKLY_GOAL = 3
 
 #
 # Update interval

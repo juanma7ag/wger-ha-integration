@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+from urllib.parse import urlencode
 
 from .client import WgerApiClient, WgerAuthenticationError
 from ..const import (
@@ -12,6 +13,8 @@ from ..const import (
     ENDPOINT_WORKOUT_LOGS,
     ENDPOINT_WORKOUT_SESSIONS,
 )
+from .weekly_goal import count_completed_sessions, week_bounds
+from .consistency import HISTORY_WEEKS, build_consistency
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -54,61 +57,34 @@ class WgerWorkoutsApi:
 
         return results[0] if results else None
 
-    async def get_trainings_this_week(self) -> int:
-        """Count workout sessions this week."""
+    async def get_trainings_this_week(self, now: datetime | None = None) -> int:
+        """Count completed sessions starting this week in the supplied timezone."""
+        now = now or datetime.now().astimezone()
+        start, end = week_bounds(now)
+        query = urlencode({
+            "datetime_start__gte": start.isoformat(),
+            "datetime_start__lt": end.isoformat(),
+            "ordering": "-datetime_start",
+            "limit": 250,
+        })
+        data = await self._client._get(f"{ENDPOINT_WORKOUT_SESSIONS}?{query}")
+        return count_completed_sessions(data.get("results", []), now)
 
-        data = await self.get_workout_sessions(
-            limit=250
-        )
-
-        sessions = data.get(
-            "results",
-            []
-        )
-
-        today = datetime.now().astimezone()
-
-        current_year, current_week, _ = (
-            today.isocalendar()
-        )
-
-        count = 0
-
-        for session in sessions:
-            start = session.get(
-                "datetime_start"
-            )
-
-            if not start:
-                continue
-
-            try:
-                session_date = datetime.fromisoformat(
-                    start.replace(
-                        "Z",
-                        "+00:00",
-                    )
-                )
-
-                (
-                    session_year,
-                    session_week,
-                    _,
-                ) = session_date.isocalendar()
-
-                if (
-                        session_year == current_year
-                        and session_week == current_week
-                ):
-                    count += 1
-
-            except ValueError:
-                _LOGGER.warning(
-                    "Invalid workout session date: %s",
-                    start,
-                )
-
-        return count
+    async def get_weekly_consistency(self, target: int, now: datetime) -> dict:
+        """Fetch a bounded history without following pagination links."""
+        start, end = week_bounds(now)
+        query = urlencode({
+            "datetime_start__gte": (start - timedelta(weeks=HISTORY_WEEKS - 1)).isoformat(),
+            "datetime_start__lt": end.isoformat(),
+            "ordering": "-datetime_start",
+            "limit": 999,
+        })
+        data = await self._client._get(f"{ENDPOINT_WORKOUT_SESSIONS}?{query}")
+        sessions = data.get("results", [])
+        if data.get("next") or data.get("count", len(sessions)) > len(sessions):
+            # Partial history must not look like missed weeks or a broken streak.
+            return {"history_complete": False, "target": target, "weeks": []}
+        return build_consistency(sessions, target, now)
 
     async def get_last_workout_duration(
             self,
@@ -575,7 +551,7 @@ class WgerWorkoutsApi:
                     secondary_volume = volume * 0.30
 
                 primary_share = (
-                    primary_volume / len(primary)
+                        primary_volume / len(primary)
                 )
 
                 for muscle in primary:
@@ -599,8 +575,8 @@ class WgerWorkoutsApi:
 
                 if secondary:
                     secondary_share = (
-                        secondary_volume
-                        / len(secondary)
+                            secondary_volume
+                            / len(secondary)
                     )
 
                     for muscle in secondary:
@@ -624,7 +600,7 @@ class WgerWorkoutsApi:
 
             else:
                 secondary_share = (
-                    volume / len(secondary)
+                        volume / len(secondary)
                 )
 
                 for muscle in secondary:
@@ -665,8 +641,8 @@ class WgerWorkoutsApi:
                 "muscle": muscle,
                 "percentage": round(
                     (
-                        estimated_volume
-                        / total_volume
+                            estimated_volume
+                            / total_volume
                     )
                     * 100,
                     1,

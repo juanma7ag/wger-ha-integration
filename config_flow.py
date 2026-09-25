@@ -14,6 +14,8 @@ from .const import (
     DOMAIN,
     CONF_TOKEN,
     CONF_URL,
+    CONF_WEEKLY_GOAL,
+    DEFAULT_WEEKLY_GOAL,
 )
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
@@ -114,7 +116,7 @@ class WgerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return WgerOptionsFlowHandler(config_entry)
 
 
-class WgerOptionsFlowHandler(config_entries.OptionsFlow):
+class WgerOptionsFlowHandler(config_entries.OptionsFlowWithReload):
     """Wger options."""
 
     def __init__(self, config_entry):
@@ -123,7 +125,19 @@ class WgerOptionsFlowHandler(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         """Manage options."""
 
-        return self.async_create_entry(
-            title="",
-            data={},
+        if user_input is not None:
+            return self.async_create_entry(
+                title="", data={**self._config_entry.options, **user_input}
+            )
+
+        return self.async_show_form(
+            step_id="init",
+            data_schema=vol.Schema({
+                vol.Required(
+                    CONF_WEEKLY_GOAL,
+                    default=self._config_entry.options.get(
+                        CONF_WEEKLY_GOAL, DEFAULT_WEEKLY_GOAL
+                    ),
+                ): vol.All(vol.Coerce(int), vol.Range(min=1, max=21)),
+            }),
         )
