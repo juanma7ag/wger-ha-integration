@@ -60,6 +60,16 @@ class WgerDataUpdateCoordinator(
         except WgerApiError as err:
             raise UpdateFailed("Unable to fetch Wger data") from err
 
+    async def _async_fetch_comparison(self, now: datetime) -> dict:
+        """Keep optional comparison failures separate from the existing sensors."""
+        try:
+            return await self.api.comparison.get_comparison(now)
+        except WgerAuthenticationError:
+            raise
+        except (WgerApiError, TimeoutError) as err:
+            _LOGGER.warning("Unable to compare Wger sessions: %s", err)
+            return {"status": "unavailable"}
+
     async def _async_fetch_data(self) -> dict:
         """Fetch data from Wger."""
 
@@ -77,6 +87,7 @@ class WgerDataUpdateCoordinator(
             last_workout,
             workout_progress,
             weekly_consistency,
+            workout_comparison,
         ) = await asyncio.gather(
             self.api.profile.get_profile(),
             self.api.routines.get_routines(),
@@ -92,7 +103,16 @@ class WgerDataUpdateCoordinator(
             self.api.workouts.get_last_workout_analysis(),
             self.api.workouts.get_workout_progress(),
             self.api.workouts.get_weekly_consistency(weekly_target, now),
+            self._async_fetch_comparison(now),
         )
+
+        if workout_comparison.get("status") == "ready":
+            current = workout_comparison["current"]
+            workout_comparison["routine_name"] = next(
+                (routine.get("name") for routine in routines.get("results", [])
+                 if routine.get("id") == current["routine_id"]),
+                None,
+            )
 
         # Calculate workout metrics from the already
         # fetched latest session.
@@ -729,6 +749,7 @@ class WgerDataUpdateCoordinator(
             "measurements": measurements,
             "trainings_this_week": trainings_this_week,
             "weekly_consistency": weekly_consistency,
+            "workout_comparison": workout_comparison,
             "weekly_goal": build_weekly_goal(
                 trainings_this_week,
                 weekly_target,

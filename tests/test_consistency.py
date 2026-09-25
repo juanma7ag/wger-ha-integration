@@ -141,6 +141,7 @@ class ConsistencyAsyncTests(unittest.IsolatedAsyncioTestCase):
                                          get_measurements=AsyncMock(return_value={}),
                                          get_current_weight=AsyncMock(return_value=None)),
             workouts=workouts,
+            comparison=SimpleNamespace(get_comparison=AsyncMock(return_value={"status": "no_sessions"})),
         )
         with patch("wger.coordinator.dt_util.now", return_value=NOW):
             result = await coordinator._async_fetch_data()

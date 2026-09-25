@@ -11,6 +11,7 @@ from .client import (
     WgerAuthenticationError,
     WgerConnectionError,
 )
+from .comparison import WgerComparisonApi
 from .exercises import WgerExercisesApi
 from .measurements import WgerMeasurementsApi
 from .nutrition import WgerNutritionApi
@@ -35,6 +36,8 @@ class WgerApi:
             base_url=base_url,
             token=token,
         )
+
+        self.comparison = WgerComparisonApi(self._client)
 
         self.profile = WgerProfileApi(
             self._client
