@@ -8,14 +8,23 @@
           "url": "URL del servidor",
           "token": "Token API"
         }
+      },
+      "reauth_confirm": {
+        "title": "Volver a autenticar Wger",
+        "description": "Introduce un nuevo token API para {url}.",
+        "data": {
+          "token": "Token API"
+        }
       }
     },
     "error": {
       "cannot_connect": "No se puede conectar con Wger",
-      "unknown": "Error desconocido"
+      "unknown": "Error desconocido",
+      "invalid_auth": "Token API no válido"
     },
     "abort": {
-      "already_configured": "Este servidor Wger ya está configurado"
+      "already_configured": "Este servidor Wger ya está configurado",
+      "reauth_successful": "Autenticación actualizada correctamente"
     }
   }
 }

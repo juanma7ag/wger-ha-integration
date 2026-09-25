@@ -70,3 +70,6 @@ target/
 # Firebase
 secrets/
 *.json
+
+.codex
+.idea

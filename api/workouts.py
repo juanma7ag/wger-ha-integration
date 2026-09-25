@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 
-from .client import WgerApiClient
+from .client import WgerApiClient, WgerAuthenticationError
 from ..const import (
     DEFAULT_LOG_LIMIT,
     DEFAULT_PAGE_LIMIT,
@@ -801,6 +801,8 @@ class WgerWorkoutsApi:
                 details = await exercises_api.get_exercise_details(
                     exercise_id
                 )
+            except WgerAuthenticationError:
+                raise
             except Exception as err:
                 _LOGGER.warning(
                     "Unable to load exercise %s for last workout: %s",

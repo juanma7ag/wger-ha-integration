@@ -7,12 +7,15 @@ import logging
 from copy import deepcopy
 from datetime import date, datetime, timedelta
 
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
+    UpdateFailed,
 )
 
-from .api import WgerApi
+from .api import WgerApi, WgerApiError, WgerAuthenticationError
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -27,6 +30,7 @@ class WgerDataUpdateCoordinator(
         self,
         hass: HomeAssistant,
         api: WgerApi,
+        entry: ConfigEntry,
     ) -> None:
         """Initialize the coordinator."""
 
@@ -36,12 +40,22 @@ class WgerDataUpdateCoordinator(
             hass,
             logger=_LOGGER,
             name=DOMAIN,
+            config_entry=entry,
             update_interval=timedelta(
                 minutes=30
             ),
         )
 
     async def _async_update_data(self) -> dict:
+        """Translate API failures into Home Assistant lifecycle errors."""
+        try:
+            return await self._async_fetch_data()
+        except WgerAuthenticationError as err:
+            raise ConfigEntryAuthFailed("Wger authentication failed") from err
+        except WgerApiError as err:
+            raise UpdateFailed("Unable to fetch Wger data") from err
+
+    async def _async_fetch_data(self) -> dict:
         """Fetch data from Wger."""
 
         (
@@ -283,6 +297,8 @@ class WgerDataUpdateCoordinator(
                         # The matching date has been found.
                         break
 
+                except WgerAuthenticationError:
+                    raise
                 except Exception as err:
                     _LOGGER.warning(
                         "Unable to resolve last workout sequence "
@@ -393,6 +409,8 @@ class WgerDataUpdateCoordinator(
 
                         break
 
+                except WgerAuthenticationError:
+                    raise
                 except Exception as err:
                     _LOGGER.warning(
                         "Unable to resolve workout progress sequence "

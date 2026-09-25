@@ -75,6 +75,7 @@ async def async_setup_entry(
         WgerDataUpdateCoordinator(
             hass=hass,
             api=api,
+            entry=entry,
         )
     )
 
@@ -101,4 +102,22 @@ async def async_setup_entry(
 
     _LOGGER.info("Wger integration loaded successfully")
 
+    return True
+
+
+async def async_unload_entry(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+) -> bool:
+    """Unload platforms and release this entry's runtime data."""
+    if not await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
+        return False
+
+    entry_data = hass.data[DOMAIN][entry.entry_id]
+    await entry_data["coordinator"].async_shutdown()
+    hass.data[DOMAIN].pop(entry.entry_id)
+    if not hass.data[DOMAIN]:
+        hass.data.pop(DOMAIN)
+
+    # The HTTP session belongs to Home Assistant and must remain open.
     return True

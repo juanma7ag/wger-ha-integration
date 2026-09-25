@@ -6,6 +6,9 @@ import voluptuous as vol
 
 from homeassistant import config_entries
 from homeassistant.core import callback
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
+from .api import WgerApi, WgerApiError, WgerAuthenticationError
 
 from .const import (
     DOMAIN,
@@ -25,6 +28,40 @@ class WgerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Wger."""
 
     VERSION = 1
+
+    async def async_step_reauth(self, entry_data):
+        """Ask for a replacement token after an authentication failure."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(self, user_input=None):
+        """Validate the replacement token before updating the existing entry."""
+        entry = self._get_reauth_entry()
+        errors = {}
+
+        if user_input is not None:
+            api = WgerApi(
+                session=async_get_clientsession(self.hass),
+                base_url=entry.data[CONF_URL],
+                token=user_input[CONF_TOKEN],
+            )
+            try:
+                await api.profile.get_profile()
+            except WgerAuthenticationError:
+                errors["base"] = "invalid_auth"
+            except (WgerApiError, TimeoutError):
+                errors["base"] = "cannot_connect"
+            else:
+                return self.async_update_reload_and_abort(
+                    entry,
+                    data_updates={CONF_TOKEN: user_input[CONF_TOKEN]},
+                )
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema({vol.Required(CONF_TOKEN): str}),
+            description_placeholders={"url": entry.data[CONF_URL]},
+            errors=errors,
+        )
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""

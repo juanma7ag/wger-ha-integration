@@ -1,1 +1,30 @@
-{"config":{"step":{"user":{"title":"Wger"}}}}
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Wger",
+        "description": "Enter your Wger server URL and API token.",
+        "data": {
+          "url": "Server URL",
+          "token": "API Token"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate Wger",
+        "description": "Enter a new API token for {url}.",
+        "data": {
+          "token": "API Token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to Wger",
+      "unknown": "Unknown error",
+      "invalid_auth": "Invalid API token"
+    },
+    "abort": {
+      "already_configured": "This Wger server is already configured",
+      "reauth_successful": "Reauthentication successful"
+    }
+  }
+}
