@@ -514,15 +514,15 @@ class WgerKpiCard extends HTMLElement {
   }
 
   getCardSize() {
-    return 6;
+    return 16;
   }
 
   getGridOptions() {
     return {
-      rows: 4,
+      rows: 12,
       columns: 12,
-      min_rows: 4,
-      min_columns: 6,
+      min_rows: 8,
+      min_columns: 8,
     };
   }
 }

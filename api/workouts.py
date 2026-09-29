@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import logging
+import asyncio
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
-from .client import WgerApiClient, WgerAuthenticationError
+from .client import WgerApiClient, WgerApiError, WgerAuthenticationError
 from ..const import (
     DEFAULT_LOG_LIMIT,
     DEFAULT_PAGE_LIMIT,
@@ -56,6 +57,104 @@ class WgerWorkoutsApi:
         )
 
         return results[0] if results else None
+
+    async def get_completed_workouts(self, limit: int = 20) -> list[dict]:
+        """List recent completed sessions for the history selector."""
+        query = urlencode({
+            "datetime_end__lte": datetime.now().astimezone().isoformat(),
+            "ordering": "-datetime_start",
+            "limit": limit,
+        })
+        data = await self._client._get(f"{ENDPOINT_WORKOUT_SESSIONS}?{query}")
+        return [
+            {
+                "session_id": session["id"],
+                "routine_id": session.get("routine"),
+                "day_id": session.get("day"),
+                "workout_name": session.get("name"),
+                "date_start": session.get("datetime_start"),
+                "date_end": session.get("datetime_end"),
+            }
+            for session in data.get("results", [])
+            if session.get("id") is not None
+            and session.get("datetime_start")
+            and session.get("datetime_end")
+        ]
+
+    async def get_workout_analysis(self, session_id: str) -> dict:
+        """Analyze one selected session with all of its recorded logs."""
+        session = await self._client._get(f"{ENDPOINT_WORKOUT_SESSIONS}{session_id}/")
+        end = self._parse_datetime(session.get("datetime_end"))
+        if (
+            str(session.get("id")) != session_id
+            or end is None
+            or end.tzinfo is None
+            or end > datetime.now().astimezone()
+        ):
+            raise WgerApiError("Workout session is not completed")
+        query = urlencode({"session": session_id, "limit": 999})
+        logs_data = await self._client._get(f"{ENDPOINT_WORKOUT_LOGS}?{query}")
+        logs = logs_data.get("results", [])
+        if logs_data.get("next") or logs_data.get("count", len(logs)) > len(logs):
+            raise WgerApiError("Workout logs are incomplete")
+        analysis = await self.get_last_workout_analysis(session, logs_data)
+        if not analysis["exercises"]:
+            return analysis
+        try:
+            weight_data, repetition_data = await asyncio.gather(
+                self._client._get("/setting-weightunit/?limit=999"),
+                self._client._get("/setting-repetitionunit/?limit=999"),
+            )
+            for unit_data in (weight_data, repetition_data):
+                unit_results = unit_data.get("results", [])
+                if unit_data.get("next") or unit_data.get("count", len(unit_results)) > len(unit_results):
+                    raise WgerApiError("Workout unit list is incomplete")
+        except WgerAuthenticationError:
+            raise
+        except WgerApiError as err:
+            _LOGGER.warning("Unable to load workout unit names: %s", err)
+            analysis["totals"]["total_volume"] = None
+            analysis["muscle_distribution"] = []
+            for exercise in analysis["exercises"]:
+                exercise["total_volume"] = None
+            return analysis
+        from .comparison import _summary
+
+        weights = {item["id"]: item for item in weight_data.get("results", [])}
+        repetitions = {item["id"]: item for item in repetition_data.get("results", [])}
+        summary = _summary(session, logs, repetitions, weights, datetime.now().astimezone())
+        analysis["totals"]["total_repetitions"] = summary["repetitions"]
+        analysis["totals"]["total_volume"] = summary["volume"]
+        for exercise in analysis["exercises"]:
+            exercise_logs = [
+                log for log in logs if log.get("exercise") == exercise["exercise_id"]
+            ]
+            exercise_summary = _summary(
+                session, exercise_logs, repetitions, weights, datetime.now().astimezone()
+            )
+            exercise["total_repetitions"] = exercise_summary["repetitions"]
+            exercise["total_volume"] = exercise_summary["volume"]
+            for workout_set in exercise["sets"]:
+                workout_set["weight_unit_name"] = weights.get(
+                    workout_set.get("weight_unit"), {}
+                ).get("name")
+                workout_set["repetitions_unit_name"] = repetitions.get(
+                    workout_set.get("repetitions_unit"), {}
+                ).get("name")
+            weight_units = {
+                workout_set.get("weight_unit_name") for workout_set in exercise["sets"]
+                if workout_set.get("weight") is not None
+            }
+            exercise["weight_unit_name"] = (
+                next(iter(weight_units)) if len(weight_units) == 1 else None
+            )
+            if len(weight_units) != 1:
+                exercise["max_weight"] = None
+        analysis["muscle_distribution"] = (
+            self._build_muscle_distribution(analysis["exercises"])
+            if summary["volume"] is not None else []
+        )
+        return analysis
 
     async def get_trainings_this_week(self, now: datetime | None = None) -> int:
         """Count completed sessions starting this week in the supplied timezone."""
@@ -671,10 +770,13 @@ class WgerWorkoutsApi:
 
     async def get_last_workout_analysis(
             self,
+            latest_session: dict | None = None,
+            logs_data: dict | None = None,
     ) -> dict | None:
-        """Return a detailed analysis of the latest workout session."""
+        """Return a detailed analysis of a session, latest by default."""
 
-        latest_session = await self.get_latest_session()
+        if latest_session is None:
+            latest_session = await self.get_latest_session()
 
         if not latest_session:
             return None
@@ -690,7 +792,7 @@ class WgerWorkoutsApi:
             "routine"
         )
 
-        data = await self.get_workout_logs(
+        data = logs_data if logs_data is not None else await self.get_workout_logs(
             limit=250
         )
 
@@ -707,6 +809,14 @@ class WgerWorkoutsApi:
             "Estimación basada en el volumen de los ejercicios "
             "y los músculos asociados a cada movimiento. "
             "No representa una carga muscular medida directamente."
+        )
+
+        session_start_dt = self._parse_datetime(latest_session.get("datetime_start"))
+        session_end_dt = self._parse_datetime(latest_session.get("datetime_end"))
+        session_duration = (
+            round((session_end_dt - session_start_dt).total_seconds() / 60, 1)
+            if session_start_dt and session_end_dt and session_end_dt >= session_start_dt
+            else None
         )
 
         if not logs:
@@ -727,7 +837,7 @@ class WgerWorkoutsApi:
                 "date_end": latest_session.get(
                     "datetime_end"
                 ),
-                "duration": None,
+                "duration": session_duration,
                 "workout_name": latest_session.get(
                     "name"
                 ),
@@ -914,6 +1024,7 @@ class WgerWorkoutsApi:
                     "weight_unit": log.get(
                         "weight_unit"
                     ),
+                    "repetitions_unit": log.get("repetitions_unit"),
                     "rir": rir,
                     "rir_target": log.get(
                         "rir_target"

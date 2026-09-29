@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 
 from aiohttp import ClientSession
+from homeassistant.components import websocket_api
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -23,6 +24,7 @@ from .const import (
 from .coordinator import (
     WgerDataUpdateCoordinator,
 )
+from .api.workout_history import websocket_workout_history, websocket_workout_detail
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,6 +48,9 @@ async def async_setup(
             )
         ]
     )
+
+    websocket_api.async_register_command(hass, websocket_workout_history)
+    websocket_api.async_register_command(hass, websocket_workout_detail)
 
     return True
 

@@ -43,17 +43,17 @@ class WgerProgressCard extends HTMLElement {
   }
 
   getCardSize() {
-    return 9;
+    return 12;
   }
 
-getGridOptions() {
-  return {
-    rows: 10,
-    columns: 12,
-    min_rows: 5,
-    min_columns: 6,
-  };
-}
+  getGridOptions() {
+    return {
+      rows: 12,
+      columns: 12,
+      min_rows: 6,
+      min_columns: 6,
+    };
+  }
 
   _loadStyles() {
     if (this._cssLoaded) {
