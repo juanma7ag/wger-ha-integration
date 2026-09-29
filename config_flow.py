@@ -11,6 +11,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import WgerApi, WgerApiError, WgerAuthenticationError
+from .api.account import CONF_USERNAME, account_title, account_unique_id, account_username
 
 from .const import (
     DOMAIN,
@@ -51,16 +52,23 @@ class WgerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 token=user_input[CONF_TOKEN],
             )
             try:
-                await api.profile.get_profile()
+                username = account_username(await api.profile.get_profile())
             except WgerAuthenticationError:
                 errors["base"] = "invalid_auth"
             except (WgerApiError, TimeoutError):
                 errors["base"] = "cannot_connect"
+            except ValueError:
+                errors["base"] = "unknown"
             else:
-                return self.async_update_reload_and_abort(
-                    entry,
-                    data_updates={CONF_TOKEN: user_input[CONF_TOKEN]},
-                )
+                if (expected := entry.data.get(CONF_USERNAME)) and (
+                    username.casefold() != expected.casefold()
+                ):
+                    errors["base"] = "account_mismatch"
+                else:
+                    return self.async_update_reload_and_abort(
+                        entry,
+                        data_updates={CONF_TOKEN: user_input[CONF_TOKEN]},
+                    )
 
         return self.async_show_form(
             step_id="reauth_confirm",
@@ -83,7 +91,7 @@ class WgerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             )
 
             try:
-                await api.profile.get_profile()
+                username = account_username(await api.profile.get_profile())
             except WgerAuthenticationError:
                 errors["base"] = "invalid_auth"
             except (WgerApiError, TimeoutError):
@@ -92,14 +100,15 @@ class WgerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected error validating Wger connection")
                 errors["base"] = "unknown"
             else:
-                await self.async_set_unique_id(url)
+                await self.async_set_unique_id(account_unique_id(url, username))
                 self._abort_if_unique_id_configured()
 
                 return self.async_create_entry(
-                    title=f"Wger ({url})",
+                    title=account_title(url, username),
                     data={
                         CONF_URL: url,
                         CONF_TOKEN: token,
+                        CONF_USERNAME: username,
                     },
                 )
 

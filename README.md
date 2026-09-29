@@ -117,7 +117,18 @@ type: custom:wger-workout-history-card
 title: Workout history
 ```
 
-The selector shows up to 20 recently completed workouts. Selecting one loads its duration, totals, volume and muscle charts, exercises, and recorded sets. The muscle chart is an estimate based on exercise metadata and recorded volume. Volume is shown in kg × repetitions when all recorded units can be converted; otherwise it is left unavailable. If you configure more than one Wger account, add the desired Home Assistant config entry's `entry_id` to this card.
+The selector shows up to 20 recently completed workouts. Selecting one loads its duration, totals, volume and muscle charts, exercises, and recorded sets. The muscle chart is an estimate based on exercise metadata and recorded volume. Volume is shown in kg × repetitions when all recorded units can be converted; otherwise it is left unavailable.
+
+### Multiple Wger accounts
+
+You can add the integration once per Wger account, including two accounts on the same server. Use each person's own API token. Home Assistant shows the account name in each integration entry. Existing sensor entity IDs are preserved when upgrading; sensors for an additional account receive distinct IDs. Check **Developer Tools → States** for the exact IDs, then set each card's `entity` to the desired account's sensor.
+
+For the workout history card, set `entry_id` to the desired Wger integration entry ID. Without it, the card can choose automatically only when one Wger account is configured:
+
+```yaml
+type: custom:wger-workout-history-card
+entry_id: YOUR_WGER_CONFIG_ENTRY_ID
+```
 
 In a **Sections** dashboard, leave the card height on **Fit to content**. Do not set a fixed `grid_options.rows` value for this card; its detail grows with the number of exercises and sets.
 

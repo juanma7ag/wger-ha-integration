@@ -20,10 +20,11 @@
     "error": {
       "cannot_connect": "Cannot connect to Wger",
       "unknown": "Unknown error",
-      "invalid_auth": "Invalid API token"
+      "invalid_auth": "Invalid API token",
+      "account_mismatch": "This API token belongs to a different Wger account"
     },
     "abort": {
-      "already_configured": "This Wger server is already configured",
+      "already_configured": "This Wger account is already configured",
       "reauth_successful": "Reauthentication successful"
     }
   },

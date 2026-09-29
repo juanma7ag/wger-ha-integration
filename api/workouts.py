@@ -444,6 +444,9 @@ class WgerWorkoutsApi:
                 "routine_id": session.get(
                     "routine"
                 ),
+                "day_id": session.get(
+                    "day"
+                ),
                 "routine_name": session.get(
                     "routine_name"
                 ),

@@ -220,8 +220,8 @@ class WgerProgressCard extends HTMLElement {
       )
       .sort(
         (a, b) =>
-          new Date(a.date) -
-          new Date(b.date)
+          new Date(a.date_start || a.date) -
+          new Date(b.date_start || b.date)
       );
   }
 

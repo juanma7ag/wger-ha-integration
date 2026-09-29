@@ -366,6 +366,7 @@ class WgerDataUpdateCoordinator(
                 workout_date = progress_entry.get(
                     "date"
                 )
+                day_id = progress_entry.get("day_id")
 
                 # Resolve the routine name from the routines
                 # already fetched by the coordinator.
@@ -388,7 +389,7 @@ class WgerDataUpdateCoordinator(
                 # from the routine date sequence.
                 if (
                     routine_id is None
-                    or not workout_date
+                    or day_id is None
                 ):
                     continue
 
@@ -422,34 +423,15 @@ class WgerDataUpdateCoordinator(
                         [],
                     )
 
-                    for entry in sequence_entries:
-                        if entry.get(
-                            "date"
-                        ) != workout_date:
-                            continue
-
-                        progress_entry[
-                            "iteration"
-                        ] = entry.get(
-                            "iteration"
-                        )
-
-                        day_data = entry.get(
-                            "day",
-                            {}
-                        )
-
-                        if isinstance(
-                            day_data,
-                            dict,
-                        ):
-                            progress_entry[
-                                "workout_name"
-                            ] = day_data.get(
-                                "name"
-                            )
-
-                        break
+                    entry = _matching_workout_day(
+                        sequence_entries, day_id, workout_date
+                    )
+                    if entry:
+                        day_name = entry["day"].get("name")
+                        if day_name:
+                            progress_entry["workout_name"] = day_name
+                        if workout_date and entry.get("date") == workout_date:
+                            progress_entry["iteration"] = entry.get("iteration")
 
                 except WgerAuthenticationError:
                     raise

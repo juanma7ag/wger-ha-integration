@@ -20,10 +20,11 @@
     "error": {
       "cannot_connect": "No se puede conectar con Wger",
       "unknown": "Error desconocido",
-      "invalid_auth": "Token API no válido"
+      "invalid_auth": "Token API no válido",
+      "account_mismatch": "Este token API pertenece a otra cuenta de Wger"
     },
     "abort": {
-      "already_configured": "Este servidor Wger ya está configurado",
+      "already_configured": "Esta cuenta de Wger ya está configurada",
       "reauth_successful": "Autenticación actualizada correctamente"
     }
   },

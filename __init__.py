@@ -15,6 +15,7 @@ from homeassistant.helpers.aiohttp_client import (
 )
 
 from .api import WgerApi
+from .api.account import CONF_USERNAME, account_title, account_unique_id, account_username
 from .const import (
     CONF_TOKEN,
     CONF_URL,
@@ -89,6 +90,16 @@ async def async_setup_entry(
     #
 
     await coordinator.async_config_entry_first_refresh()
+
+    username = account_username(coordinator.data["profile"])
+    unique_id = account_unique_id(url, username)
+    if entry.unique_id != unique_id or entry.data.get(CONF_USERNAME) != username:
+        hass.config_entries.async_update_entry(
+            entry,
+            unique_id=unique_id,
+            title=account_title(url, username),
+            data={**entry.data, CONF_USERNAME: username},
+        )
 
     hass.data.setdefault(
         DOMAIN,

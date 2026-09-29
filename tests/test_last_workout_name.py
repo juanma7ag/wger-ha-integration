@@ -53,3 +53,21 @@ class LastWorkoutAnalysisTests(unittest.IsolatedAsyncioTestCase):
         api.get_workout_logs = AsyncMock(return_value={"results": []})
         analysis = await api.get_last_workout_analysis()
         self.assertEqual(analysis["day_id"], 30)
+
+    async def test_progress_keeps_each_sessions_recorded_day(self):
+        api = WgerWorkoutsApi(SimpleNamespace())
+        api.get_workout_sessions = AsyncMock(return_value={"results": [
+            {"id": 1, "routine": 10, "day": 20, "name": "Old name",
+             "datetime_start": "2026-09-29T08:00:00Z"},
+            {"id": 2, "routine": 10, "day": 30, "name": "Old name",
+             "datetime_start": "2026-09-29T18:00:00Z"},
+        ]})
+        api.get_workout_logs = AsyncMock(return_value={"results": [
+            {"session": 1, "exercise": 1, "repetitions": 10, "weight": 20},
+            {"session": 2, "exercise": 2, "repetitions": 10, "weight": 20},
+        ]})
+        progress = await api.get_workout_progress()
+        self.assertEqual(
+            {item["session_id"]: item["day_id"] for item in progress},
+            {1: 20, 2: 30},
+        )

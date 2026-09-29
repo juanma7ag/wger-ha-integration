@@ -10,6 +10,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
 )
@@ -173,6 +174,19 @@ async def async_setup_entry(
         hass.data[DOMAIN][entry.entry_id]["coordinator"]
     )
 
+    registry = er.async_get(hass)
+    for description in SENSORS:
+        legacy_unique_id = f"wger_{description.key}"
+        entity_id = registry.async_get_entity_id("sensor", DOMAIN, legacy_unique_id)
+        if entity_id is None:
+            continue
+        registered = registry.async_get(entity_id)
+        if registered.config_entry_id == entry.entry_id:
+            registry.async_update_entity(
+                entity_id,
+                new_unique_id=f"wger_{entry.entry_id}_{description.key}",
+            )
+
     async_add_entities(
         WgerSensor(
             coordinator,
@@ -201,12 +215,7 @@ class WgerSensor(
 
         self.entity_description = description
 
-        self._attr_unique_id = (
-            f"wger_{coordinator.entry.entry_id}_{description.key}"
-            if description.key.startswith("weekly_goal_")
-            or description.key in ("weekly_streak", "weekly_best_streak", "workout_comparison", "planned_workout")
-            else f"wger_{description.key}"
-        )
+        self._attr_unique_id = f"wger_{coordinator.entry.entry_id}_{description.key}"
 
     @property
     def native_value(self):
