@@ -41,7 +41,7 @@ If Wger later appears in the default HACS catalog, you can search for **Wger** t
 
 1. Download or clone this repository.
 2. Create `<config>/custom_components/wger/` in your Home Assistant configuration directory.
-3. Copy the integration's root Python files, `manifest.json`, `strings.json`, `api/`, `frontend/`, and `translations/` into that `wger` directory. Keep the directory structure intact. The result must include:
+3. Copy the integration's root Python files, `manifest.json`, `strings.json`, `api/`, `brand/`, `frontend/`, and `translations/` into that `wger` directory. Keep the directory structure intact. The result must include:
 
    ```text
    <config>/custom_components/wger/
@@ -53,6 +53,9 @@ If Wger later appears in the default HACS catalog, you can search for **Wger** t
    ├── api/
    │   ├── __init__.py
    │   └── ...
+   ├── brand/
+   │   ├── icon.png
+   │   └── icon@2x.png
    ├── frontend/
    │   ├── wger-theme.css
    │   └── ...
@@ -181,6 +184,6 @@ For the other cards, start with the card type and data source in the table above
 
 ## For repository maintainers
 
-This repository keeps the integration files at its root, so [`hacs.json`](hacs.json) sets `content_in_root` to `true`, which [HACS supports for integration repositories](https://www.hacs.dev/docs/publish/integration/). Adding the repository as a **custom repository** is separate from having it listed in the default HACS catalog. Before requesting default catalog inclusion, follow HACS's current [integration publication requirements](https://www.hacs.dev/docs/publish/integration/) and validation process, including its branding requirement.
+This repository keeps the integration files at its root, so [`hacs.json`](hacs.json) sets `content_in_root` to `true`, which [HACS supports for integration repositories](https://www.hacs.dev/docs/publish/integration/). Adding the repository as a **custom repository** is separate from having it listed in the default HACS catalog. The bundled `brand/icon.png` and `brand/icon@2x.png` show this integration's own house-and-dumbbell icon, inspired by the [wger logo](https://github.com/wger-project/wger/blob/master/wger/core/static/images/logos/logo.png). Home Assistant 2026.3 and newer can load these files directly from the integration's `brand/` folder. Before requesting default catalog inclusion, follow HACS's current [publication requirements](https://github.com/hacs/documentation/blob/main/source/docs/publish/include.md), including a passing brand check.
 
 For bugs and feature requests, use the [GitHub issue tracker](https://github.com/juanma7ag/wger-ha-integration/issues). Include the Home Assistant version, wger version, integration version, affected entity or card, and relevant log lines. Remove tokens and private URLs from logs before sharing them.
