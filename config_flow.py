@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -17,6 +19,8 @@ from .const import (
     CONF_WEEKLY_GOAL,
     DEFAULT_WEEKLY_GOAL,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
@@ -67,41 +71,37 @@ class WgerConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
-
         errors = {}
 
         if user_input is not None:
-
             url = user_input[CONF_URL].rstrip("/")
             token = user_input[CONF_TOKEN]
+            api = WgerApi(
+                session=async_get_clientsession(self.hass),
+                base_url=url,
+                token=token,
+            )
 
-            #
-            # TODO
-            # Aquí llamaremos a la API real.
-            #
             try:
-                # valid = await api.validate_connection()
-
-                valid = True
-
-                if valid:
-
-                    await self.async_set_unique_id(url)
-
-                    self._abort_if_unique_id_configured()
-
-                    return self.async_create_entry(
-                        title=f"Wger ({url})",
-                        data={
-                            CONF_URL: url,
-                            CONF_TOKEN: token,
-                        },
-                    )
-
+                await api.profile.get_profile()
+            except WgerAuthenticationError:
+                errors["base"] = "invalid_auth"
+            except (WgerApiError, TimeoutError):
                 errors["base"] = "cannot_connect"
-
             except Exception:
+                _LOGGER.exception("Unexpected error validating Wger connection")
                 errors["base"] = "unknown"
+            else:
+                await self.async_set_unique_id(url)
+                self._abort_if_unique_id_configured()
+
+                return self.async_create_entry(
+                    title=f"Wger ({url})",
+                    data={
+                        CONF_URL: url,
+                        CONF_TOKEN: token,
+                    },
+                )
 
         return self.async_show_form(
             step_id="user",

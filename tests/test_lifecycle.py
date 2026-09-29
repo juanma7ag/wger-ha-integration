@@ -118,5 +118,47 @@ class ReauthTests(unittest.IsolatedAsyncioTestCase):
                 self.flow.async_update_reload_and_abort.assert_not_called()
 
 
+class InitialConfigTests(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        self.flow = WgerConfigFlow()
+        self.flow.hass = MagicMock()
+        self.flow.async_set_unique_id = AsyncMock()
+        self.flow._abort_if_unique_id_configured = MagicMock()
+        self.flow.async_create_entry = MagicMock(return_value={"type": "create_entry"})
+
+    async def test_success_validates_before_creating_entry(self):
+        with patch("wger.config_flow.async_get_clientsession"), patch("wger.config_flow.WgerApi") as api:
+            api.return_value.profile.get_profile = AsyncMock(return_value={"id": 1})
+            result = await self.flow.async_step_user(
+                {"url": "https://wger.example/", "token": "valid"}
+            )
+
+        self.assertEqual(result, {"type": "create_entry"})
+        api.return_value.profile.get_profile.assert_awaited_once()
+        self.flow.async_set_unique_id.assert_awaited_once_with("https://wger.example")
+        self.flow.async_create_entry.assert_called_once_with(
+            title="Wger (https://wger.example)",
+            data={"url": "https://wger.example", "token": "valid"},
+        )
+
+    async def test_connection_failures_do_not_create_entry(self):
+        for error, expected in (
+            (WgerAuthenticationError, "invalid_auth"),
+            (WgerConnectionError, "cannot_connect"),
+            (WgerApiError, "cannot_connect"),
+            (TimeoutError, "cannot_connect"),
+        ):
+            with self.subTest(error=error):
+                with patch("wger.config_flow.async_get_clientsession"), patch("wger.config_flow.WgerApi") as api:
+                    api.return_value.profile.get_profile = AsyncMock(side_effect=error())
+                    result = await self.flow.async_step_user(
+                        {"url": "https://wger.example", "token": "invalid"}
+                    )
+
+                self.assertEqual(result["errors"], {"base": expected})
+                self.flow.async_set_unique_id.assert_not_awaited()
+                self.flow.async_create_entry.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()
