@@ -1,18 +1,18 @@
 {
   "domain": "wger",
   "name": "Wger",
-  "version": "26.10.0",
-  "documentation": "https://github.com/juanma7ag/wger-ha-integration",
-  "issue_tracker": "https://github.com/juanma7ag/wger-ha-integration/issues",
-  "dependencies": ["http", "websocket_api"],
   "codeowners": [
     "@juanma7ag"
   ],
   "config_flow": true,
-  "iot_class": "cloud_polling",
+  "dependencies": ["http", "websocket_api"],
+  "documentation": "https://github.com/juanma7ag/wger-ha-integration",
   "integration_type": "service",
-  "requirements": [],
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/juanma7ag/wger-ha-integration/issues",
   "loggers": [
     "custom_components.wger"
-  ]
+  ],
+  "requirements": [],
+  "version": "26.10.0"
 }
