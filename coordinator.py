@@ -70,6 +70,16 @@ class WgerDataUpdateCoordinator(
             _LOGGER.warning("Unable to compare Wger sessions: %s", err)
             return {"status": "unavailable"}
 
+    async def _async_fetch_planned_workout(self, now: datetime) -> dict:
+        """Keep optional plan matching failures separate from other sensors."""
+        try:
+            return await self.api.planned_workout.get_planned_workout(now)
+        except WgerAuthenticationError:
+            raise
+        except (WgerApiError, TimeoutError) as err:
+            _LOGGER.warning("Unable to match Wger session to plan: %s", err)
+            return {"status": "unavailable"}
+
     async def _async_fetch_data(self) -> dict:
         """Fetch data from Wger."""
 
@@ -88,6 +98,7 @@ class WgerDataUpdateCoordinator(
             workout_progress,
             weekly_consistency,
             workout_comparison,
+            planned_workout,
         ) = await asyncio.gather(
             self.api.profile.get_profile(),
             self.api.routines.get_routines(),
@@ -104,6 +115,7 @@ class WgerDataUpdateCoordinator(
             self.api.workouts.get_workout_progress(),
             self.api.workouts.get_weekly_consistency(weekly_target, now),
             self._async_fetch_comparison(now),
+            self._async_fetch_planned_workout(now),
         )
 
         if workout_comparison.get("status") == "ready":
@@ -750,6 +762,7 @@ class WgerDataUpdateCoordinator(
             "trainings_this_week": trainings_this_week,
             "weekly_consistency": weekly_consistency,
             "workout_comparison": workout_comparison,
+            "planned_workout": planned_workout,
             "weekly_goal": build_weekly_goal(
                 trainings_this_week,
                 weekly_target,

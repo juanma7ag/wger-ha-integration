@@ -15,6 +15,7 @@ from .comparison import WgerComparisonApi
 from .exercises import WgerExercisesApi
 from .measurements import WgerMeasurementsApi
 from .nutrition import WgerNutritionApi
+from .planned_workout import WgerPlannedWorkoutApi
 from .profile import WgerProfileApi
 from .routines import WgerRoutinesApi
 from .workouts import WgerWorkoutsApi
@@ -54,6 +55,8 @@ class WgerApi:
         self.exercises = WgerExercisesApi(
             self._client
         )
+
+        self.planned_workout = WgerPlannedWorkoutApi(self._client, self.exercises)
 
         self.measurements = WgerMeasurementsApi(
             self._client

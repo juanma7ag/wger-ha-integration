@@ -30,6 +30,9 @@ SENSORS: tuple[
     ...
 ] = (
     WgerSensorEntityDescription(
+        key="planned_workout", name="Planned Workout", icon="mdi:clipboard-check-outline",
+    ),
+    WgerSensorEntityDescription(
         key="workout_comparison", name="Workout Comparison", icon="mdi:compare-horizontal",
     ),
     WgerSensorEntityDescription(
@@ -201,7 +204,7 @@ class WgerSensor(
         self._attr_unique_id = (
             f"wger_{coordinator.entry.entry_id}_{description.key}"
             if description.key.startswith("weekly_goal_")
-            or description.key in ("weekly_streak", "weekly_best_streak", "workout_comparison")
+            or description.key in ("weekly_streak", "weekly_best_streak", "workout_comparison", "planned_workout")
             else f"wger_{description.key}"
         )
 
@@ -210,6 +213,11 @@ class WgerSensor(
         """Return sensor state."""
 
         key = self.entity_description.key
+
+        if key == "planned_workout":
+            status = self.coordinator.data.get("planned_workout", {}).get("status")
+            return None if status == "unavailable" else status
+
 
         if key == "workout_comparison":
             status = self.coordinator.data.get("workout_comparison", {}).get("status")
@@ -362,6 +370,10 @@ class WgerSensor(
         """Return additional state attributes."""
 
         key = self.entity_description.key
+
+        if key == "planned_workout":
+            return self.coordinator.data.get("planned_workout", {})
+
 
         if key == "workout_comparison":
             return self.coordinator.data.get("workout_comparison", {})

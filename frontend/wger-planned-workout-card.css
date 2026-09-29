@@ -1,0 +1,46 @@
+:host { display: block; }
+.planned-card { display: block; padding: 24px; color: var(--wger-text); background: var(--wger-card-bg); border: 1px solid var(--wger-border); border-radius: 24px; font-family: var(--wger-font); }
+header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.kicker { color: var(--wger-accent); font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+h2 { margin: 6px 0 0; font-size: 23px; font-weight: 850; letter-spacing: -.03em; }
+header ha-icon { color: var(--wger-accent); --mdc-icon-size: 30px; flex-shrink: 0; }
+.subtitle, .counts, .muted { color: var(--wger-muted); font-size: 12px; line-height: 1.6; }
+.score { display: flex; flex-direction: column; gap: 7px; margin: 20px 0; }
+.score strong { font-size: 48px; line-height: 1; letter-spacing: -.04em; }
+.score small { color: var(--wger-muted); font-size: 25px; }
+.score > span { color: var(--wger-text-soft); font-size: 13px; }
+.progress-label { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; }
+.progress-label strong { color: var(--wger-accent); }
+.track { height: 9px; margin-top: 10px; overflow: hidden; border-radius: 8px; background: var(--wger-panel-light); }
+.fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--wger-accent), var(--wger-indigo)); }
+.exercises { display: grid; gap: 9px; margin-top: 18px; }
+.exercise { border: 1px solid var(--wger-border); border-radius: 12px; background: var(--wger-panel); overflow: hidden; }
+.exercise summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; padding: 14px; }
+.exercise summary:focus-visible, .unlinked summary:focus-visible { outline: 2px solid var(--wger-accent); outline-offset: -3px; }
+.exercise summary > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.exercise summary strong { font-size: 14px; overflow-wrap: anywhere; }
+.badge { color: var(--wger-muted); font-size: 11px; }
+.covered .badge { color: var(--wger-green); }
+.uncertain .badge { color: var(--wger-orange); }
+.sets { display: flex; flex-direction: column; gap: 5px; text-align: right; font-size: 18px; flex-shrink: 0; }
+.sets small { color: var(--wger-muted); font-size: 9px; max-width: 100px; }
+.exercise-body { padding: 0 14px 14px; border-top: 1px solid var(--wger-border); }
+h3 { font-size: 12px; margin-bottom: 6px; }
+.plan { margin: 0 0 12px; padding-left: 16px; color: var(--wger-text-soft); font-size: 12px; line-height: 1.6; }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 11px; }
+caption { color: var(--wger-muted); text-align: left; margin: 8px 0; }
+th, td { padding: 9px 6px; border-bottom: 1px solid var(--wger-border); text-align: left; vertical-align: top; }
+th { font-weight: 500; color: var(--wger-muted); }
+.difference { display: block; margin-top: 4px; color: var(--wger-accent); }
+.notice { color: var(--wger-orange); font-size: 12px; line-height: 1.6; }
+.unlinked { margin-top: 16px; color: var(--wger-text-soft); font-size: 12px; line-height: 1.6; }
+.unlinked summary { cursor: pointer; color: var(--wger-orange); }
+footer { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--wger-border); color: var(--wger-muted); font-size: 11px; line-height: 1.6; }
+.empty { color: var(--wger-muted); line-height: 1.6; overflow-wrap: anywhere; }
+@media (max-width: 400px) {
+  .planned-card { padding: 16px; border-radius: 18px; }
+  h2 { font-size: 20px; }
+  .exercise summary { padding: 12px; gap: 8px; }
+  .score strong { font-size: 42px; }
+}
