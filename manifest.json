@@ -1,10 +1,10 @@
 {
   "domain": "wger",
   "name": "Wger",
-  "version": "0.0.1",
+  "version": "26.10.0",
   "documentation": "https://github.com/juanma7ag/wger-ha-integration",
   "issue_tracker": "https://github.com/juanma7ag/wger-ha-integration/issues",
-  "dependencies": [],
+  "dependencies": ["http", "websocket_api"],
   "codeowners": [
     "@juanma7ag"
   ],

@@ -13,5 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Prepare integration layout for Hassfest
+        run: |
+          mkdir -p custom_components/wger
+          cp -R __init__.py api binary_sensor.py brand button.py config_flow.py const.py coordinator.py diagnostics.py frontend sensor.py services.yaml strings.json translations custom_components/wger/
+          mv manifest.json custom_components/wger/
       - name: Validate Home Assistant integration
         uses: home-assistant/actions/hassfest@master

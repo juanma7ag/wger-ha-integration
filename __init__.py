@@ -10,6 +10,7 @@ from homeassistant.components import websocket_api
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import (
     async_get_clientsession,
 )
@@ -28,6 +29,8 @@ from .coordinator import (
 from .api.workout_history import websocket_workout_history, websocket_workout_detail
 
 _LOGGER = logging.getLogger(__name__)
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 type WgerConfigEntry = ConfigEntry
 
