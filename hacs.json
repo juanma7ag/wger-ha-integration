@@ -1,6 +1,6 @@
 {
   "name": "Wger",
-  "content_in_root": false,
+  "content_in_root": true,
   "homeassistant": "2025.1.0",
   "iot_class": "cloud_polling",
   "render_readme": true
