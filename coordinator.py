@@ -25,6 +25,25 @@ from .api.weekly_goal import build_weekly_goal
 _LOGGER = logging.getLogger(__name__)
 
 
+def _matching_workout_day(
+    sequence_entries: list[dict],
+    day_id: int,
+    workout_date: str | None,
+) -> dict | None:
+    """Find the recorded session day, preferring its scheduled date."""
+    matches = [
+        entry for entry in sequence_entries
+        if isinstance(entry.get("day"), dict)
+        and entry["day"].get("id") == day_id
+    ]
+    return next(
+        (entry for entry in matches if entry.get("date") == workout_date),
+        None,
+    ) or (
+        matches[0] if matches else None
+    )
+
+
 class WgerDataUpdateCoordinator(
     DataUpdateCoordinator[dict]
 ):
@@ -265,6 +284,7 @@ class WgerDataUpdateCoordinator(
             workout_date = last_workout.get(
                 "date"
             )
+            day_id = last_workout.get("day_id")
 
             # Resolve the routine name from the routines
             # already fetched by the coordinator.
@@ -283,11 +303,11 @@ class WgerDataUpdateCoordinator(
                         )
                         break
 
-            # Resolve the workout/day name and iteration
-            # from the routine date sequence.
+            # Resolve the name from the session's recorded day.
+            # A scheduled date alone may refer to another day.
             if (
                 routine_id is not None
-                and workout_date
+                and day_id is not None
             ):
                 try:
                     sequence = (
@@ -309,35 +329,15 @@ class WgerDataUpdateCoordinator(
                             [],
                         )
 
-                    for entry in sequence_entries:
-                        if entry.get(
-                            "date"
-                        ) != workout_date:
-                            continue
-
-                        last_workout[
-                            "iteration"
-                        ] = entry.get(
-                            "iteration"
-                        )
-
-                        day_data = entry.get(
-                            "day",
-                            {}
-                        )
-
-                        if isinstance(
-                            day_data,
-                            dict,
-                        ):
-                            last_workout[
-                                "workout_name"
-                            ] = day_data.get(
-                                "name"
-                            )
-
-                        # The matching date has been found.
-                        break
+                    entry = _matching_workout_day(
+                        sequence_entries, day_id, workout_date
+                    )
+                    if entry:
+                        day_name = entry["day"].get("name")
+                        if day_name:
+                            last_workout["workout_name"] = day_name
+                        if workout_date and entry.get("date") == workout_date:
+                            last_workout["iteration"] = entry.get("iteration")
 
                 except WgerAuthenticationError:
                     raise

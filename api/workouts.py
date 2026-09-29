@@ -713,6 +713,7 @@ class WgerWorkoutsApi:
             return {
                 "session_id": session_id,
                 "routine_id": routine_id,
+                "day_id": latest_session.get("day"),
                 "iteration": latest_session.get(
                     "iteration"
                 ),
@@ -1051,6 +1052,7 @@ class WgerWorkoutsApi:
         return {
             "session_id": session_id,
             "routine_id": routine_id,
+            "day_id": latest_session.get("day"),
             "iteration": latest_session.get(
                 "iteration"
             ),
