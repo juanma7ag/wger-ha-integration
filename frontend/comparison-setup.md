@@ -22,8 +22,9 @@ finalizada anterior cuyo `routine` y `day` coincidan. Una sesión aún abierta n
 sustituye a la última finalizada. Si falta la asociación con el día de rutina, no
 se intenta adivinar una equivalencia por nombre o ejercicios.
 
-La tarjeta muestra valores actuales, anteriores, diferencias absolutas y
-porcentuales de series, repeticiones, volumen y duración. Las fechas se presentan
+La tarjeta muestra el nombre del día de rutina de ambas sesiones, además de
+valores actuales, anteriores, diferencias absolutas y porcentuales de series,
+repeticiones, volumen y duración. Las fechas se presentan
 en la zona horaria de Home Assistant. Cada registro de ejercicio cuenta como una
 serie; la duración procede del inicio y fin de la sesión. Si cambian los ejercicios
 registrados, se indica en la tarjeta.
@@ -42,7 +43,8 @@ registrados, se indica en la tarjeta.
 No hay paginación. Cada consulta de registros se filtra por la sesión exacta y
 solicita hasta 999 resultados. Si faltan resultados, no se muestran totales
 parciales. Las consultas se repiten en el intervalo existente de 30 minutos.
-La comparación requiere hasta seis peticiones adicionales por actualización.
+La comparación requiere hasta siete peticiones adicionales por actualización,
+incluida la consulta del nombre del día de rutina.
 No modifica datos en wger.
 
 ## Comprobación manual

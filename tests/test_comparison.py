@@ -25,8 +25,8 @@ from wger.coordinator import WgerDataUpdateCoordinator
 from wger.sensor import WgerSensor, SENSORS
 
 NOW = datetime(2026, 9, 25, 12, tzinfo=ZoneInfo("Europe/Madrid"))
-CURRENT = {"id": "new", "routine": 10, "day": 20, "datetime_start": "2026-09-25T08:00:00Z", "datetime_end": "2026-09-25T09:00:00Z"}
-PREVIOUS = {"id": "old", "routine": 10, "day": 20, "datetime_start": "2026-09-18T08:00:00Z", "datetime_end": "2026-09-18T08:45:00Z"}
+CURRENT = {"id": "new", "name": "Torso A", "routine": 10, "day": 20, "datetime_start": "2026-09-25T08:00:00Z", "datetime_end": "2026-09-25T09:00:00Z"}
+PREVIOUS = {"id": "old", "name": "Torso anterior", "routine": 10, "day": 20, "datetime_start": "2026-09-18T08:00:00Z", "datetime_end": "2026-09-18T08:45:00Z"}
 REPS = [{"id": 1, "unit_type": "REPETITIONS"}, {"id": 2, "unit_type": "TIME"}]
 WEIGHTS = [{"id": 1, "name": "kg"}, {"id": 2, "name": "lb"}, {"id": 3, "name": "Body Weight"}]
 
@@ -49,6 +49,8 @@ class ComparisonTests(unittest.TestCase):
         self.assertEqual(result["metrics"]["duration"]["delta"], 15)
         self.assertEqual(result["metrics"]["volume"]["percent"], 140)
         self.assertEqual(result["current"]["date_start"], "2026-09-25T10:00:00+02:00")
+        self.assertEqual(result["current"]["workout_name"], "Torso A")
+        self.assertEqual(result["previous"]["workout_name"], "Torso anterior")
 
     def test_pounds_converted_to_kg(self):
         result = comparison([log("100", weight_unit=2)], [log("45.359237")])
@@ -87,6 +89,24 @@ class ComparisonTests(unittest.TestCase):
 
 
 class ComparisonApiTests(unittest.IsolatedAsyncioTestCase):
+    async def test_comparison_names_use_recorded_routine_day(self):
+        coordinator = object.__new__(WgerDataUpdateCoordinator)
+        sequence = [
+            {"date": "2026-09-18", "day": {"id": 20, "name": "Espalda-Bíceps"}},
+            {"date": "2026-09-25", "day": {"id": 20, "name": "Espalda-Bíceps"}},
+            {"date": "2026-09-25", "day": {"id": 21, "name": "Piernas"}},
+        ]
+        get_sequence = AsyncMock(return_value={"results": sequence})
+        coordinator.api = SimpleNamespace(routines=SimpleNamespace(
+            get_routine_date_sequence_display=get_sequence))
+        result = comparison([log()], [log()])
+        result["current"]["workout_name"] = None
+        result["previous"]["workout_name"] = None
+        await coordinator._async_enrich_comparison_names(result)
+        self.assertEqual(result["current"]["workout_name"], "Espalda-Bíceps")
+        self.assertEqual(result["previous"]["workout_name"], "Espalda-Bíceps")
+        get_sequence.assert_awaited_once_with(10)
+
     async def test_exact_session_filters_and_complete_logs(self):
         requests = []
         async def get(url):

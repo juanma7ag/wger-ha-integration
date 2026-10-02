@@ -89,6 +89,29 @@ class WgerDataUpdateCoordinator(
             _LOGGER.warning("Unable to compare Wger sessions: %s", err)
             return {"status": "unavailable"}
 
+    async def _async_enrich_comparison_names(self, comparison: dict) -> None:
+        """Use the recorded routine day name for both compared sessions."""
+        current = comparison["current"]
+        routine_id = current.get("routine_id")
+        if routine_id is None:
+            return
+        try:
+            sequence = await self.api.routines.get_routine_date_sequence_display(routine_id)
+            entries = sequence if isinstance(sequence, list) else sequence.get("results", [])
+            for session in (comparison["previous"], current):
+                day_id = session.get("day_id")
+                if day_id is None:
+                    continue
+                entry = _matching_workout_day(
+                    entries, day_id, (session.get("date_start") or "")[:10]
+                )
+                if entry and entry["day"].get("name"):
+                    session["workout_name"] = entry["day"]["name"]
+        except WgerAuthenticationError:
+            raise
+        except (WgerApiError, TimeoutError, ValueError, TypeError, AttributeError) as err:
+            _LOGGER.warning("Unable to resolve comparison workout names: %s", err)
+
     async def _async_fetch_planned_workout(self, now: datetime) -> dict:
         """Keep optional plan matching failures separate from other sensors."""
         try:
@@ -144,6 +167,7 @@ class WgerDataUpdateCoordinator(
                  if routine.get("id") == current["routine_id"]),
                 None,
             )
+            await self._async_enrich_comparison_names(workout_comparison)
 
         # Calculate workout metrics from the already
         # fetched latest session.

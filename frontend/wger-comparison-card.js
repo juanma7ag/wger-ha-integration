@@ -81,9 +81,9 @@ class WgerComparisonCard extends HTMLElement {
         </header>
         ${ready ? `
           <p class="routine">${this._escape(data.routine_name || "Misma rutina")} · Mismo día de rutina</p>
-          <div class="sessions"><div><span>ANTERIOR</span><strong>${this._escape(this._date(data.previous.date_start))}</strong></div>
+          <div class="sessions"><div class="session"><span>ANTERIOR</span><strong>${this._escape(data.previous.workout_name || "Entrenamiento sin nombre")}</strong><time>${this._escape(this._date(data.previous.date_start))}</time></div>
             <ha-icon icon="mdi:arrow-right"></ha-icon>
-            <div><span>ÚLTIMA FINALIZADA</span><strong>${this._escape(this._date(data.current.date_start))}</strong></div></div>
+            <div class="session"><span>ÚLTIMA FINALIZADA</span><strong>${this._escape(data.current.workout_name || "Entrenamiento sin nombre")}</strong><time>${this._escape(this._date(data.current.date_start))}</time></div></div>
           <div class="metrics">${metrics.filter((key) => data.metrics[key]).map((key) => this._metric(key, data.metrics[key])).join("")}</div>
           ${notes.length ? `<ul class="notes">${notes.map((note) => `<li>${this._escape(note)}</li>`).join("")}</ul>` : ""}
           <footer>Las diferencias describen cambios, no una valoración del entrenamiento.<br>Volumen = carga en kg × repeticiones.</footer>

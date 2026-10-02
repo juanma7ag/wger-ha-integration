@@ -11,8 +11,8 @@ vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../frontend/wger-compar
 });
 const Card = registry.get('wger-comparison-card');
 const data = {
-  current: { date_start: '2026-09-25T00:30:00+02:00' },
-  previous: { date_start: '2026-09-18T10:00:00+02:00' },
+  current: { date_start: '2026-09-25T00:30:00+02:00', workout_name: 'Torso A' },
+  previous: { date_start: '2026-09-18T10:00:00+02:00', workout_name: '<img src=x onerror=alert(1)>' },
   routine_name: '<img src=x onerror=alert(1)>',
   metrics: {
     sets: { current: 4, previous: 3, delta: 1, percent: 33.3, unit: 'series' },
@@ -35,6 +35,12 @@ test('signed differences are neutral and routine names are escaped', () => {
   assert.match(html, /&lt;img/);
   assert.doesNotMatch(html, /<img/);
   assert.match(html, /25 sept/);
+  assert.match(html, /<strong>Torso A<\/strong>/);
+  assert.match(html, /<strong>&lt;img/);
+});
+test('sessions without a name show a clear fallback', () => {
+  const html = render({ ...data, current: { date_start: data.current.date_start } });
+  assert.match(html, /<strong>Entrenamiento sin nombre<\/strong>/);
 });
 test('unsupported metrics show a dash instead of a fake zero', () => {
   const html = render({ ...data, volume_comparable: false,

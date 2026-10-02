@@ -52,6 +52,7 @@ def _summary(session: dict, logs: list[dict], repetitions: dict, weights: dict, 
 
     return {
         "session_id": session["id"],
+        "workout_name": session.get("name"),
         "routine_id": session.get("routine"),
         "day_id": session.get("day"),
         "date_start": start.astimezone(now.tzinfo).isoformat() if start else None,
