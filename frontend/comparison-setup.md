@@ -3,7 +3,7 @@
 Actualiza la integración, incluido el nuevo `api/comparison.py`, y reinicia Home
 Assistant. Añade este recurso de tipo **Módulo JavaScript**:
 
-`/wger/frontend/wger-comparison-card.js?v=1`
+`/wger/frontend/wger-comparison-card.js?v=26.10.1`
 
 Añade una tarjeta manual:
 
