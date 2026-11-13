@@ -8,6 +8,7 @@ from copy import deepcopy
 from datetime import date, datetime, timedelta
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import UnitOfMass
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import (
@@ -122,6 +123,23 @@ class WgerDataUpdateCoordinator(
             _LOGGER.warning("Unable to match Wger session to plan: %s", err)
             return {"status": "unavailable"}
 
+    async def _async_fetch_nutrition(self, today: date) -> dict:
+        """Fetch today's nutrition; a failed part is None, not 0."""
+        result: dict = {"date": today.isoformat(), "diary": None, "plan": None}
+        try:
+            result["diary"] = await self.api.nutrition.get_daily_totals(today)
+        except WgerAuthenticationError:
+            raise
+        except (WgerApiError, TimeoutError) as err:
+            _LOGGER.warning("Unable to fetch Wger nutrition diary: %s", err)
+        try:
+            result["plan"] = await self.api.nutrition.get_plan_goals(today)
+        except WgerAuthenticationError:
+            raise
+        except (WgerApiError, TimeoutError) as err:
+            _LOGGER.warning("Unable to fetch Wger nutrition plan: %s", err)
+        return result
+
     async def _async_fetch_data(self) -> dict:
         """Fetch data from Wger."""
 
@@ -141,6 +159,7 @@ class WgerDataUpdateCoordinator(
             weekly_consistency,
             workout_comparison,
             planned_workout,
+            nutrition,
         ) = await asyncio.gather(
             self.api.profile.get_profile(),
             self.api.routines.get_routines(),
@@ -158,6 +177,7 @@ class WgerDataUpdateCoordinator(
             self.api.workouts.get_weekly_consistency(weekly_target, now),
             self._async_fetch_comparison(now),
             self._async_fetch_planned_workout(now),
+            self._async_fetch_nutrition(now.date()),
         )
 
         if workout_comparison.get("status") == "ready":
@@ -769,6 +789,7 @@ class WgerDataUpdateCoordinator(
             "weekly_consistency": weekly_consistency,
             "workout_comparison": workout_comparison,
             "planned_workout": planned_workout,
+            "nutrition": nutrition,
             "weekly_goal": build_weekly_goal(
                 trainings_this_week,
                 weekly_target,
@@ -802,6 +823,18 @@ class WgerDataUpdateCoordinator(
         )
 
     @property
+    def nutrition(
+        self,
+    ) -> dict:
+        if self.data is None:
+            return {}
+
+        return self.data.get(
+            "nutrition",
+            {},
+        )
+
+    @property
     def current_weight(
         self,
     ) -> float | None:
@@ -811,6 +844,23 @@ class WgerDataUpdateCoordinator(
         return self.data.get(
             "current_weight"
         )
+
+    @property
+    def weight_unit(
+        self,
+    ) -> str:
+        """Return the body weight unit from the wger profile.
+
+        wger returns weight entries in the profile's ``weight_unit``
+        ('kg' or 'lb'). Default to kilograms when it is unknown.
+        """
+        profile = (self.data or {}).get("profile")
+        unit = profile.get("weight_unit") if isinstance(profile, dict) else None
+
+        if isinstance(unit, str) and unit.strip().lower() in ("lb", "lbs"):
+            return UnitOfMass.POUNDS
+
+        return UnitOfMass.KILOGRAMS
 
     @property
     def trainings_this_week(

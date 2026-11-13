@@ -62,10 +62,22 @@ ENDPOINT_WEIGHT_ENTRIES = "/weightentry/"
 ENDPOINT_MEASUREMENTS = "/measurement/"
 
 #
+# Nutrition
+#
+
+ENDPOINT_NUTRITION_PLANS = "/nutritionplan/"
+ENDPOINT_NUTRITION_DIARY = "/nutritiondiary/"
+
+#
 # Exercise database
 #
 
 ENDPOINT_EXERCISE_INFO = "/exerciseinfo/"
+ENDPOINT_LANGUAGE = "/language/"
+
+# wger language id for English, used when the Home Assistant
+# language has no exercise translation.
+FALLBACK_LANGUAGE_ID = 2
 
 #
 # Sensors

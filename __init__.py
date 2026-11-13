@@ -78,6 +78,7 @@ async def async_setup_entry(
         session=session,
         base_url=url,
         token=token,
+        language=hass.config.language,
     )
 
     coordinator = (
