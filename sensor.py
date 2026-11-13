@@ -5,10 +5,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from homeassistant.components.sensor import (
+    SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
+    SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import UnitOfMass
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import (
@@ -57,7 +60,10 @@ SENSORS: tuple[
     WgerSensorEntityDescription(
         key="current_weight",
         name="Current Weight",
-        native_unit_of_measurement="kg",
+        device_class=SensorDeviceClass.WEIGHT,
+        state_class=SensorStateClass.MEASUREMENT,
+        # Default only; the unit follows the wger profile (see WgerSensor).
+        native_unit_of_measurement=UnitOfMass.KILOGRAMS,
         icon="mdi:scale-bathroom",
     ),
     WgerSensorEntityDescription(
@@ -160,7 +166,58 @@ SENSORS: tuple[
         native_unit_of_measurement="reps",
         icon="mdi:repeat",
     ),
+    WgerSensorEntityDescription(
+        key="nutrition_calories_today",
+        name="Nutrition Calories Today",
+        native_unit_of_measurement="kcal",
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:food-apple",
+    ),
+    WgerSensorEntityDescription(
+        key="nutrition_protein_today",
+        name="Nutrition Protein Today",
+        native_unit_of_measurement="g",
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:food-steak",
+    ),
+    WgerSensorEntityDescription(
+        key="nutrition_calorie_goal",
+        name="Nutrition Calorie Goal",
+        native_unit_of_measurement="kcal",
+        icon="mdi:target",
+    ),
+    WgerSensorEntityDescription(
+        key="nutrition_protein_goal",
+        name="Nutrition Protein Goal",
+        native_unit_of_measurement="g",
+        icon="mdi:target",
+    ),
+    WgerSensorEntityDescription(
+        key="nutrition_calories_remaining",
+        name="Nutrition Calories Remaining",
+        native_unit_of_measurement="kcal",
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:food-apple-outline",
+    ),
+    WgerSensorEntityDescription(
+        key="nutrition_protein_remaining",
+        name="Nutrition Protein Remaining",
+        native_unit_of_measurement="g",
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:food-steak-off",
+    ),
 )
+
+# Which part of the nutrition data each nutrition sensor needs.
+# A part that failed to load makes the sensor unavailable.
+NUTRITION_SOURCES = {
+    "nutrition_calories_today": ("diary",),
+    "nutrition_protein_today": ("diary",),
+    "nutrition_calorie_goal": ("plan",),
+    "nutrition_protein_goal": ("plan",),
+    "nutrition_calories_remaining": ("diary", "plan"),
+    "nutrition_protein_remaining": ("diary", "plan"),
+}
 
 
 async def async_setup_entry(
@@ -218,10 +275,70 @@ class WgerSensor(
         self._attr_unique_id = f"wger_{coordinator.entry.entry_id}_{description.key}"
 
     @property
+    def native_unit_of_measurement(self) -> str | None:
+        """Return the unit, following the wger profile for body weight."""
+
+        if self.entity_description.key == "current_weight":
+            return self.coordinator.weight_unit
+
+        return super().native_unit_of_measurement
+
+    @property
+    def available(self) -> bool:
+        """Nutrition sensors are unavailable when their data failed to load."""
+
+        if not super().available:
+            return False
+
+        sources = NUTRITION_SOURCES.get(self.entity_description.key)
+
+        if sources is None:
+            return True
+
+        nutrition = self.coordinator.nutrition
+
+        return all(nutrition.get(source) is not None for source in sources)
+
+    def _nutrition_value(self, key: str):
+        """Return the state of a nutrition sensor."""
+
+        nutrition = self.coordinator.nutrition
+        diary = nutrition.get("diary") or {}
+        plan = nutrition.get("plan") or {}
+
+        if key == "nutrition_calories_today":
+            return diary.get("energy")
+
+        if key == "nutrition_protein_today":
+            return diary.get("protein")
+
+        if key == "nutrition_calorie_goal":
+            return plan.get("goal_energy")
+
+        if key == "nutrition_protein_goal":
+            return plan.get("goal_protein")
+
+        nutrient, goal_key, digits = (
+            ("energy", "goal_energy", 0)
+            if key == "nutrition_calories_remaining"
+            else ("protein", "goal_protein", 1)
+        )
+        goal = plan.get(goal_key)
+        eaten = diary.get(nutrient)
+
+        if goal is None or eaten is None:
+            return None
+
+        return round(goal - eaten, digits)
+
+    @property
     def native_value(self):
         """Return sensor state."""
 
         key = self.entity_description.key
+
+        if key in NUTRITION_SOURCES:
+            return self._nutrition_value(key)
 
         if key == "planned_workout":
             status = self.coordinator.data.get("planned_workout", {}).get("status")
@@ -379,6 +496,16 @@ class WgerSensor(
         """Return additional state attributes."""
 
         key = self.entity_description.key
+
+        if key in ("nutrition_calories_today", "nutrition_protein_today"):
+            nutrition = self.coordinator.nutrition
+            return {
+                **(nutrition.get("diary") or {}),
+                "date": nutrition.get("date"),
+            }
+
+        if key in NUTRITION_SOURCES:
+            return self.coordinator.nutrition.get("plan") or {}
 
         if key == "planned_workout":
             return self.coordinator.data.get("planned_workout", {})

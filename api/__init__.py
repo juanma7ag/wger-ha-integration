@@ -29,8 +29,13 @@ class WgerApi:
         session: ClientSession,
         base_url: str,
         token: str,
+        language: str | None = None,
     ) -> None:
-        """Initialize the Wger API."""
+        """Initialize the Wger API.
+
+        ``language`` is the Home Assistant language (for example "en"),
+        used to pick exercise translations.
+        """
 
         self._client = WgerApiClient(
             session=session,
@@ -53,7 +58,8 @@ class WgerApi:
         )
 
         self.exercises = WgerExercisesApi(
-            self._client
+            self._client,
+            language=language,
         )
 
         self.planned_workout = WgerPlannedWorkoutApi(self._client, self.exercises)

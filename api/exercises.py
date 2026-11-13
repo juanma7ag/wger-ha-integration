@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import logging
 from urllib.parse import urlparse
 
 from ..const import (
     DEFAULT_LOG_LIMIT,
     ENDPOINT_EXERCISE_INFO,
+    ENDPOINT_LANGUAGE,
+    FALLBACK_LANGUAGE_ID,
 )
-from .client import WgerApiClient
+from .client import WgerApiClient, WgerApiError, WgerAuthenticationError
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class WgerExercisesApi:
@@ -17,12 +22,72 @@ class WgerExercisesApi:
     def __init__(
         self,
         client: WgerApiClient,
+        language: str | None = None,
     ) -> None:
         """Initialize the exercises API."""
 
         self._client = client
 
+        self._language = language
+
+        self._language_ids: list[int] | None = None
+
         self._exercise_cache: dict[int, dict] = {}
+
+    async def _get_language_ids(
+        self,
+    ) -> list[int]:
+        """Return wger language ids in order of preference.
+
+        The Home Assistant language comes first (matched on the wger
+        language short_name, e.g. "en" or "es"), then English.
+        """
+
+        if self._language_ids is not None:
+            return self._language_ids
+
+        language_ids: list[int] = []
+        code = (self._language or "").strip().lower()
+        candidates = [
+            candidate
+            for candidate in (code, code.split("-")[0])
+            if candidate
+        ]
+
+        if candidates:
+            try:
+                data = await self._client._get(
+                    f"{ENDPOINT_LANGUAGE}?limit=100"
+                )
+
+            except WgerAuthenticationError:
+                raise
+
+            except (WgerApiError, TimeoutError) as err:
+                # Do not cache, so the lookup is retried next update.
+                _LOGGER.warning(
+                    "Unable to load wger languages, using English: %s",
+                    err,
+                )
+                return [FALLBACK_LANGUAGE_ID]
+
+            languages = {
+                str(item.get("short_name", "")).lower(): item.get("id")
+                for item in data.get("results", [])
+                if isinstance(item, dict)
+            }
+
+            for candidate in candidates:
+                language_id = languages.get(candidate)
+                if language_id is not None and language_id not in language_ids:
+                    language_ids.append(language_id)
+
+        if FALLBACK_LANGUAGE_ID not in language_ids:
+            language_ids.append(FALLBACK_LANGUAGE_ID)
+
+        self._language_ids = language_ids
+
+        return language_ids
 
     def _normalize_image_url(
         self,
@@ -272,29 +337,18 @@ class WgerExercisesApi:
             []
         )
 
-        # Prefer Spanish.
-        for translation in translations:
-            if translation.get(
-                "language"
-            ) == 4:
-                name = translation.get(
-                    "name"
-                )
+        # Prefer the Home Assistant language, then English.
+        for language_id in await self._get_language_ids():
+            for translation in translations:
+                if translation.get(
+                    "language"
+                ) == language_id:
+                    name = translation.get(
+                        "name"
+                    )
 
-                if name:
-                    return name
-
-        # Fallback to English.
-        for translation in translations:
-            if translation.get(
-                "language"
-            ) == 2:
-                name = translation.get(
-                    "name"
-                )
-
-                if name:
-                    return name
+                    if name:
+                        return name
 
         # Final fallback: first available
         # translation with a valid name.
@@ -359,29 +413,29 @@ class WgerExercisesApi:
             []
         )
 
-        # Prefer the Spanish translation for the
-        # exercise description and notes.
-        spanish_translation = None
+        # Prefer the Home Assistant language, then English,
+        # for the exercise description and notes. Notes come
+        # from the same translation, so they match its language.
+        preferred_translation = None
 
-        for translation in translations:
-            if translation.get(
-                "language"
-            ) == 4:
-                spanish_translation = translation
+        for language_id in await self._get_language_ids():
+            preferred_translation = next(
+                (
+                    translation
+                    for translation in translations
+                    if translation.get(
+                        "language"
+                    ) == language_id
+                ),
+                None,
+            )
+
+            if preferred_translation is not None:
                 break
-
-        # Fallback to English if Spanish is not available.
-        if spanish_translation is None:
-            for translation in translations:
-                if translation.get(
-                    "language"
-                ) == 2:
-                    spanish_translation = translation
-                    break
 
         # Final fallback to the first translation
         # containing useful descriptive information.
-        if spanish_translation is None:
+        if preferred_translation is None:
             for translation in translations:
                 if (
                     translation.get(
@@ -391,7 +445,7 @@ class WgerExercisesApi:
                         "notes"
                     )
                 ):
-                    spanish_translation = translation
+                    preferred_translation = translation
                     break
 
         main_image = None
@@ -537,10 +591,10 @@ class WgerExercisesApi:
                 )
             ],
             "description": (
-                spanish_translation.get(
+                preferred_translation.get(
                     "description_source"
                 )
-                if spanish_translation
+                if preferred_translation
                 else None
             ),
             "notes": [
@@ -548,11 +602,11 @@ class WgerExercisesApi:
                     "comment"
                 )
                 for note in (
-                    spanish_translation.get(
+                    preferred_translation.get(
                         "notes",
                         []
                     )
-                    if spanish_translation
+                    if preferred_translation
                     else []
                 )
                 if isinstance(
